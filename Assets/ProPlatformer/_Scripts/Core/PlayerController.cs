@@ -33,7 +33,21 @@ namespace Myd.Platform
 
         private bool onGround;
         private bool wasOnGround;
-        
+        private bool attachedToRope;
+        private float ropeClimbSpeed;
+        private Vector2 ropePosition;
+
+        public bool IsAttachedToRope => attachedToRope;
+
+        public void AttachToRope(Vector2 position, float climbSpeed)
+        {
+            attachedToRope = true;
+            ropePosition = position;
+            ropeClimbSpeed = climbSpeed;
+            Position = new Vector2(position.x, Position.y);
+            Speed = Vector2.zero;
+        }
+
         public bool DashStartedOnGround { get; set; }
 
         public int ForceMoveX { get; set; }
@@ -112,6 +126,22 @@ namespace Myd.Platform
 
         public void Update(float deltaTime)
         {
+            if (attachedToRope)
+            {
+                if (!GameInput.Grab.Checked())
+                {
+                    attachedToRope = false;
+                }
+                else
+                {
+                    var moveY = Math.Sign(UnityEngine.Input.GetAxisRaw("Vertical"));
+                    Position = new Vector2(ropePosition.x, Position.y + moveY * ropeClimbSpeed * deltaTime);
+                    Speed = Vector2.zero;
+                    UpdateCamera(deltaTime);
+                    return;
+                }
+            }
+
             //更新各个组件中变量的状态
             {
                 //Get ground

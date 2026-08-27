@@ -15,14 +15,25 @@ namespace Myd.Platform
     /// </summary>
     public class Player
     {
+        public static Player Current { get; private set; }
+
         private PlayerRenderer playerRenderer;
         private PlayerController playerController;
 
         private IGameContext gameContext;
 
+        public Vector2 Position => playerController != null ? playerController.Position : Vector2.zero;
+        public bool IsAttachedToRope => playerController != null && playerController.IsAttachedToRope;
+
         public Player(IGameContext gameContext)
         {
             this.gameContext = gameContext;
+            Current = this;
+        }
+
+        public void AttachToRope(Vector2 ropePosition, float climbSpeed)
+        {
+            playerController?.AttachToRope(ropePosition, climbSpeed);
         }
 
         //加载玩家实体
