@@ -5190,6 +5190,10 @@ MonoBehaviour:
     y: -0.5
     width: 0.27
     height: 0.6
+  footstepClip: {fileID: 8300000, guid: aa6d18b5634b98b4d9092ceb23fdd25c, type: 3}
+  jumpClip: {fileID: 8300000, guid: 0d07921e037fa234c8205ffecdf0c0e7, type: 3}
+  heavyLandClip: {fileID: 8300000, guid: 098cb0ed512ecae499d76a015ccf6ec3, type: 3}
+  footstepInterval: 0.3
 --- !u!114 &4509220662286137586
 MonoBehaviour:
   m_ObjectHideFlags: 0

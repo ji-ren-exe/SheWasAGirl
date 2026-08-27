@@ -19,4 +19,5 @@
 - [2026-08-28 03:22:21] 角色属性已从 Constants 全局参数抽离为 ScriptableObject（CharacterStats）。女儿属性配置在 Assets/Resources/DaughterStats.asset，Player.Reload() 时加载并调用 ApplyToConstants() 同步到 Constants。未来创建母亲角色只需新建 MotherStats.asset 配置不同属性。角色属性包括：移动速度、跳跃、二段跳次数、冲刺、攀爬耐力、墙跳等。
 
 ### Reference
+- [2026-08-28 05:34:26] 音效资产位于 Assets/ProPlatformer/_Arts/Audio/（FootstepGravel.mp3、JumpLight.mp3、HeavyLandImpact.mp3），已绑定到 PlayerRenderer.prefab 的序列化字段（footstepClip/jumpClip/heavyLandClip），AudioSource 挂在 PlayerRenderer(Clone) 根对象（Awake 中动态添加，spatialBlend=0）。脚步声用 clip+loop+Play 循环播放（volume=0.3），停止/离地时 Pause() 保留进度、恢复跑步时 UnPause() 断点续播；跳跃声和重落地声（落差>10.7）用 PlayOneShot 一次性播放。音频代码已验证正常，若用户报告无声问题应排查 Windows 音量混合器/空间音效等系统层面原因。SceneEffectManager 的 JumpDust/DashLine 子对象曾丢失导致 MissingReferenceException，已重建并赋值。
 

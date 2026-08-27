@@ -63,6 +63,27 @@ namespace Myd.Platform
         private Vector2 scale;
         private Vector2 currSpriteScale;
 
+        // --- 音效 ---
+        [Header("音效")]
+        [SerializeField] private AudioClip footstepClip;
+        [SerializeField] private AudioClip jumpClip;
+        [SerializeField] private AudioClip heavyLandClip;
+        [SerializeField] private float footstepInterval = 0.3f;
+        private AudioSource audioSource;
+        private float footstepTimer;
+        // 记录起跳时的高度，用于判断是否为高落差落地
+        private float jumpStartY;
+        private bool wasInAir;
+
+        private void Awake()
+        {
+            audioSource = gameObject.GetComponent<AudioSource>();
+            if (audioSource == null)
+                audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
+        }
+
         public Vector3 SpritePosition { get => this.spriteRenderer.transform.position; }
 
         public void Reload()
@@ -169,6 +190,68 @@ namespace Myd.Platform
             if (currentAnim == AnimState.Run) animScale = 0.8f;
             else if (currentAnim == AnimState.Jump) animScale = 1.2f;
             currSpriteScale = new Vector2(animScale, animScale);
+
+            // 脚步声：跑步时循环播放，停止/离地暂停（保留进度，恢复时从断点继续）
+            if (currentAnim == AnimState.Run)
+            {
+                if (audioSource != null && footstepClip != null)
+                {
+                    if (audioSource.clip != footstepClip)
+                    {
+                        // 首次进入跑步：从头播放
+                        audioSource.clip = footstepClip;
+                        audioSource.loop = true;
+                        audioSource.volume = 0.3f;
+                        audioSource.Play();
+                    }
+                    else if (!audioSource.isPlaying)
+                    {
+                        // 恢复跑步：从中断处继续播放
+                        audioSource.UnPause();
+                    }
+                }
+            }
+            else
+            {
+                // 不在跑步状态（离地或停止移动）暂停脚步声，保留播放进度
+                if (audioSource != null && audioSource.clip == footstepClip)
+                {
+                    audioSource.Pause();
+                }
+                footstepTimer = 0;
+            }
+
+            // 跳跃音效：状态切到 Jump 时播放
+            if (currentAnim == AnimState.Jump && !wasInAir)
+            {
+                PlayClip(jumpClip, 0.8f);
+                jumpStartY = transform.position.y;
+            }
+
+            // 高处落地震动音效：从空中落地且落差超过 4 个角色身高(4×2.68≈10.7)
+            float heavyLandThreshold = 10.7f;
+            if (currentAnim != AnimState.Jump && wasInAir)
+            {
+                float fallDistance = jumpStartY - transform.position.y;
+                if (fallDistance > heavyLandThreshold)
+                {
+                    PlayClip(heavyLandClip, 1f);
+                }
+            }
+
+            wasInAir = (currentAnim == AnimState.Jump);
+        }
+
+        private void PlayClip(AudioClip clip, float volume)
+        {
+            if (clip != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(clip, volume);
+            }
+            else
+            {
+                Debug.LogWarning($"[AUDIO] PlayClip failed: clip={clip}, audioSource={audioSource}");
+            }
         }
 
         private bool IsOnGround()
