@@ -24,6 +24,9 @@ namespace Myd.Platform
 
         public Vector2 Position => playerController != null ? playerController.Position : Vector2.zero;
         public bool IsAttachedToRope => playerController != null && playerController.IsAttachedToRope;
+        public bool HasStamina => playerController == null || playerController.HasStamina;
+        public float StaminaPercent => playerController != null ? playerController.StaminaPercent : 1f;
+        public Facings Facing => playerController != null ? playerController.Facing : Facings.Right;
 
         public Player(IGameContext gameContext)
         {

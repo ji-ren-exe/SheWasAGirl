@@ -61,8 +61,8 @@ namespace Myd.Platform
             {
                 return this.ctx.Dash();
             }
-            //放开抓取键,则回到Normal状态
-            if (!GameInput.Grab.Checked())
+            //松开朝向墙体的方向键,或耐力耗尽,则回到Normal状态
+            if (!ctx.WantsGrabFacing)
             {
                 //Speed += LiftBoost;
                 //Play(Sfxs.char_mad_grab_letgo);
@@ -165,7 +165,14 @@ namespace Myd.Platform
             {
                 ctx.Speed.y = 0;
             }
-            //TODO Stamina
+
+            //消耗耐力：向上攀爬消耗更快，静止抓墙消耗较慢
+            float staminaCost = ctx.MoveY == 1 ? Constants.ClimbUpCost : Constants.ClimbStillCost;
+            if (!ctx.ConsumeStamina(staminaCost * deltaTime))
+            {
+                //耐力耗尽，强制脱离墙面
+                return EActionState.Normal;
+            }
             return state;
         }
 

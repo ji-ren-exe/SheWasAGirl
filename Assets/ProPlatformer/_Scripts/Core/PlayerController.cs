@@ -37,6 +37,33 @@ namespace Myd.Platform
         private float ropeClimbSpeed;
         private Vector2 ropePosition;
 
+        private float stamina = Constants.ClimbMaxStamina;
+
+        public float Stamina => stamina;
+        public float StaminaPercent => Constants.ClimbMaxStamina <= 0 ? 0f : Mathf.Clamp01(stamina / Constants.ClimbMaxStamina);
+        public bool HasStamina => stamina > 0;
+
+        //按住朝向墙体的方向键即视为抓墙，不再需要独立按键
+        public bool WantsGrab(int dir)
+        {
+            return HasStamina && this.moveX == dir;
+        }
+
+        //当前朝向是否满足抓墙意图
+        public bool WantsGrabFacing => WantsGrab((int)this.Facing);
+
+        //消耗耐力，耗尽时返回 false，用于强制脱离墙面
+        public bool ConsumeStamina(float amount)
+        {
+            stamina = Mathf.Max(stamina - amount, 0f);
+            return stamina > 0f;
+        }
+
+        public void RefillStamina()
+        {
+            stamina = Constants.ClimbMaxStamina;
+        }
+
         public bool IsAttachedToRope => attachedToRope;
 
         public void AttachToRope(Vector2 position, float climbSpeed)
@@ -107,6 +134,8 @@ namespace Myd.Platform
             this.lastDashes = this.dashes = 1;
             this.Position = startPosition;
             this.collider = normalHitbox;
+            RefillStamina();
+            RefillStamina();
 
             this.SpriteControl.SetSpriteScale(NORMAL_SPRITE_SCALE);
 
@@ -128,13 +157,17 @@ namespace Myd.Platform
         {
             if (attachedToRope)
             {
-                if (!GameInput.Grab.Checked())
+                //按住任意方向键保持吸附；松开方向键或耐力耗尽则脱离
+                bool holdingRope = Math.Abs(UnityEngine.Input.GetAxisRaw("Horizontal")) > 0.1f
+                    || Math.Abs(UnityEngine.Input.GetAxisRaw("Vertical")) > 0.1f;
+                var moveY = Math.Sign(UnityEngine.Input.GetAxisRaw("Vertical"));
+                float ropeCost = moveY == 1 ? Constants.ClimbUpCost : Constants.ClimbStillCost;
+                if (!holdingRope || !ConsumeStamina(ropeCost * deltaTime))
                 {
                     attachedToRope = false;
                 }
                 else
                 {
-                    var moveY = Math.Sign(UnityEngine.Input.GetAxisRaw("Vertical"));
                     Position = new Vector2(ropePosition.x, Position.y + moveY * ropeClimbSpeed * deltaTime);
                     Speed = Vector2.zero;
                     UpdateCamera(deltaTime);
@@ -164,6 +197,12 @@ namespace Myd.Platform
                 if (this.onGround && this.stateMachine.State != (int)EActionState.Climb)
                 {
                     this.WallSlideTimer = Constants.WallSlideTime;
+                }
+
+                //角色接触地面后耐力回满
+                if (this.onGround)
+                {
+                    RefillStamina();
                 }
                 //Wall Boost, 不消耗体力WallJump
                 this.WallBoost?.Update(deltaTime);
@@ -353,7 +392,7 @@ namespace Myd.Platform
         {
             if (!onGround)
             {
-                //Stamina -= ClimbJumpCost;
+                ConsumeStamina(Constants.ClimbJumpCost);
 
                 //sweatSprite.Play("jump", true);
                 //Input.Rumble(RumbleStrength.Light, RumbleLength.Medium);

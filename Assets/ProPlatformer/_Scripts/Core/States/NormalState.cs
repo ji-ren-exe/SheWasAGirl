@@ -36,8 +36,8 @@ namespace Myd.Platform
 
         public override EActionState Update(float deltaTime)
         {
-            //Climb
-            if (GameInput.Grab.Checked() && !ctx.Ducking)
+            //Climb: 按住朝向墙体的方向键即可抓墙，需要有耐力
+            if (ctx.WantsGrabFacing && !ctx.Ducking)
             {
                 //Climbing
                 if (ctx.Speed.y <= 0 && Math.Sign(ctx.Speed.x) != -(int)ctx.Facing)
@@ -132,7 +132,7 @@ namespace Myd.Platform
                 {
                     float max = this.ctx.MaxFall;//最大下落速度
                     //Wall Slide
-                    if ((ctx.MoveX == (int)ctx.Facing || (ctx.MoveX == 0 && GameInput.Grab.Checked())) && ctx.MoveY != -1)
+                    if (ctx.MoveX == (int)ctx.Facing && ctx.MoveY != -1)
                     {
                         //判断是否向下做Wall滑行
                         if (ctx.Speed.y <= 0 && ctx.WallSlideTimer > 0 && ctx.ClimbBoundsCheck((int)ctx.Facing) && ctx.CollideCheck(ctx.Position, Vector2.right * (int)ctx.Facing) && ctx.CanUnDuck)
@@ -185,7 +185,7 @@ namespace Myd.Platform
                     //如果右侧有墙
                     if (ctx.WallJumpCheck(1))
                     {
-                        if (ctx.Facing == Facings.Right && GameInput.Grab.Checked())
+                        if (ctx.Facing == Facings.Right && ctx.WantsGrab(1))
                             ctx.ClimbJump();
                         else
                             ctx.WallJump(-1);
@@ -193,7 +193,7 @@ namespace Myd.Platform
                     //如果左侧有墙
                     else if (ctx.WallJumpCheck(-1))
                     {
-                        if (ctx.Facing == Facings.Left && GameInput.Grab.Checked())
+                        if (ctx.Facing == Facings.Left && ctx.WantsGrab(-1))
                             ctx.ClimbJump();
                         else
                             ctx.WallJump(1);
