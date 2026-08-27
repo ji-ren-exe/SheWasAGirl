@@ -180,6 +180,11 @@ namespace Myd.Platform
                 {
                     this.ctx.Jump();
                 }
+                else if (ctx.CanAirJump)
+                {
+                    // 二段跳
+                    ctx.AirJump();
+                }
                 else if (ctx.CanUnDuck)
                 {
                     //如果右侧有墙

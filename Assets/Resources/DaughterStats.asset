@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87bb1cda529daf54eb8757114aa20219, type: 3}
+  m_Name: DaughterStats
+  m_EditorClassIdentifier: 
+  maxRun: 9
+  runAccel: 100
+  runReduce: 80
+  airMult: 0.65
+  jumpSpeed: 12
+  jumpHBoost: 5
+  varJumpTime: 0.18
+  maxAirJumps: 1
+  maxDashes: 1
+  dashSpeed: 14
+  dashTime: 0.18
+  maxStamina: 55
+  climbUpCost: 45.454544
+  climbStillCost: 10
+  climbJumpCost: 27.5
+  climbUpSpeed: 4.5
+  climbDownSpeed: -8
+  climbSlipSpeed: -3
+  climbAccel: 90
+  wallJumpHSpeed: 14
+  wallSlideTime: 1.2

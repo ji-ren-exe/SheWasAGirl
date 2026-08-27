@@ -47,14 +47,14 @@ namespace Myd.Platform
         public override EActionState Update(float deltaTime)
         {
             ctx.ClimbNoMoveTimer -= deltaTime;
-            //处理跳跃
+            //处理跳跃：抓墙时按跳跃触发不消耗二段跳次数的跳跃，使玩家远离墙面
             if (GameInput.Jump.Pressed() && (!ctx.Ducking || ctx.CanUnDuck))
             {
-                if (ctx.MoveX == -(int)ctx.Facing)
-                    ctx.WallJump(-(int)ctx.Facing);
-                else
-                    ctx.ClimbJump();
-
+                // 朝墙的反方向跳离墙面，不消耗二段跳次数
+                int wallDir = (int)ctx.Facing;
+                ctx.WallJump(-wallDir);
+                // 恢复二段跳次数，因为墙跳不应消耗它
+                ctx.airJumps = Constants.MaxAirJumps;
                 return EActionState.Normal;
             }
             if (ctx.CanDash)
@@ -166,8 +166,8 @@ namespace Myd.Platform
                 ctx.Speed.y = 0;
             }
 
-            //消耗耐力：向上攀爬消耗更快，静止抓墙消耗较慢
-            float staminaCost = ctx.MoveY == 1 ? Constants.ClimbUpCost : Constants.ClimbStillCost;
+            //消耗耐力：向上攀爬消耗更快，静止抓墙消耗较慢，整体减半
+            float staminaCost = (ctx.MoveY == 1 ? Constants.ClimbUpCost : Constants.ClimbStillCost) * 0.5f;
             if (!ctx.ConsumeStamina(staminaCost * deltaTime))
             {
                 //耐力耗尽，强制脱离墙面

@@ -4,7 +4,7 @@ namespace Myd.Platform
 {
     public class RopeClimbInteractable : MonoBehaviour
     {
-        [SerializeField] private float grabDistance = 1.25f;
+        [SerializeField] private float grabDistance = 3f;
         [SerializeField] private float climbSpeed = 4.5f;
 
         private void Update()
@@ -21,11 +21,21 @@ namespace Myd.Platform
             if (moveX == 0)
                 return;
 
-            Vector2 toRope = (Vector2)transform.position - player.Position;
-            if (Vector2.Distance(player.Position, transform.position) > grabDistance)
+            // 用 SpriteRenderer bounds 计算最近点（不依赖碰撞箱）
+            Vector2 closestPoint = transform.position;
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                var bounds = sr.bounds;
+                closestPoint = bounds.ClosestPoint(player.Position);
+            }
+
+            Vector2 toRope = closestPoint - player.Position;
+            if (Vector2.Distance(player.Position, closestPoint) > grabDistance)
                 return;
 
-            if (System.Math.Sign(toRope.x) == moveX || Mathf.Abs(toRope.x) < 0.1f)
+            // 方向判断：朝向绳子的方向
+            if (System.Math.Sign(toRope.x) == moveX || Mathf.Abs(toRope.x) < 0.5f)
             {
                 player.AttachToRope(transform.position, climbSpeed);
             }

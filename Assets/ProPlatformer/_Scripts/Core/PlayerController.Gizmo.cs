@@ -8,6 +8,9 @@ namespace Myd.Platform
     {
         public void Draw(EGizmoDrawType type)
         {
+            //始终绘制碰撞箱
+            DrawCollider();
+
             switch (type)
             {
                 case EGizmoDrawType.SlipCheck:
@@ -17,6 +20,20 @@ namespace Myd.Platform
                     DrawClimbCheck();
                     break;
             }
+        }
+
+        private void DrawCollider()
+        {
+            //绘制当前碰撞箱（绿色线框）
+            Vector2 pos = this.Position + collider.position;
+            Vector2 size = collider.size;
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(pos + size / 2f, size);
+
+            //绘制脚下检测点（蓝色小球）
+            Vector2 groundPos = this.Position + collider.position + Vector2.down * 0.02f;
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(groundPos, 0.05f);
         }
 
         private void DrawSlipCheck()

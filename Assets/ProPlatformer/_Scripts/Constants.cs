@@ -71,10 +71,11 @@ namespace Myd.Platform
         public static int DashVFloorSnapDist = 3;       //DashAttacking下的地面吸附像素值
         public static float DashAttackTime = .3f;       //
         public static int MaxDashes = 1;
+        public static int MaxAirJumps = 1;  // 二段跳次数
         #endregion
 
         #region Climb参数
-        public static float ClimbMaxStamina = 110;       //最大耐力
+        public static float ClimbMaxStamina = 55;       //最大耐力（减半）
         public static float ClimbUpCost = 100 / 2.2f;   //向上爬得耐力消耗
         public static float ClimbStillCost = 100 / 10f; //爬着不动耐力消耗
         public static float ClimbJumpCost = 110 / 4f;   //爬着跳跃耐力消耗

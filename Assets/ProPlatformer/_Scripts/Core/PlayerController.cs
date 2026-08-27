@@ -28,6 +28,8 @@ namespace Myd.Platform
         private float dashRefillCooldownTimer;          //
         public int dashes;
         public int lastDashes;
+        public int airJumps;          // 空中剩余跳跃次数（二段跳）
+        public int lastAirJumps;
         private float wallSpeedRetentionTimer; // If you hit a wall, start this timer. If coast is clear within this timer, retain h-speed
         private float wallSpeedRetained;
 
@@ -102,6 +104,12 @@ namespace Myd.Platform
             this.SpriteControl = spriteControl;
             this.EffectControl = effectControl;
 
+            // 从 PlayerRenderer 读取 Inspector 中可调的碰撞盒参数
+            if (spriteControl is PlayerRenderer renderer)
+            {
+                SetHitboxes(renderer.normalHitbox, renderer.runHitbox, renderer.jumpHitbox, renderer.duckHitbox);
+            }
+
             this.stateMachine = new FiniteStateMachine<BaseActionState>((int)EActionState.Size);
             this.stateMachine.AddState(new NormalState(this));
             this.stateMachine.AddState(new DashState(this));
@@ -132,6 +140,7 @@ namespace Myd.Platform
             //根据进入的方式,决定初始状态
             this.stateMachine.State = (int)EActionState.Normal;
             this.lastDashes = this.dashes = 1;
+            this.airJumps = 0; // 落地后由 Update 恢复为 maxAirJumps
             this.Position = startPosition;
             this.collider = normalHitbox;
             RefillStamina();
@@ -161,7 +170,7 @@ namespace Myd.Platform
                 bool holdingRope = Math.Abs(UnityEngine.Input.GetAxisRaw("Horizontal")) > 0.1f
                     || Math.Abs(UnityEngine.Input.GetAxisRaw("Vertical")) > 0.1f;
                 var moveY = Math.Sign(UnityEngine.Input.GetAxisRaw("Vertical"));
-                float ropeCost = moveY == 1 ? Constants.ClimbUpCost : Constants.ClimbStillCost;
+                float ropeCost = (moveY == 1 ? Constants.ClimbUpCost : Constants.ClimbStillCost) * 0.5f;
                 if (!holdingRope || !ConsumeStamina(ropeCost * deltaTime))
                 {
                     attachedToRope = false;
@@ -221,6 +230,7 @@ namespace Myd.Platform
                     else if (onGround)
                     {
                         RefillDash();
+                        airJumps = Constants.MaxAirJumps; // 落地后恢复二段跳
                     }
                 }
 
@@ -432,6 +442,20 @@ namespace Myd.Platform
             }
             else
                 return false;
+        }
+
+        /// <summary>
+        /// 二段跳：空中按跳跃时，消耗一次空中跳跃
+        /// </summary>
+        public bool CanAirJump => !this.onGround && this.airJumps > 0;
+
+        public void AirJump()
+        {
+            GameInput.Jump.ConsumeBuffer();
+            this.airJumps--;
+            varJumpTimer = Constants.VarJumpTime;
+            this.Speed.y = Constants.JumpSpeed;
+            varJumpSpeed = this.Speed.y;
         }
 
         

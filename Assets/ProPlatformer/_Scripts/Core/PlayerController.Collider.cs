@@ -16,10 +16,36 @@ namespace Myd.Platform
         const float STEP = 0.1f;  //碰撞检测步长，对POINT检测用
         const float DEVIATION = 0.02f;  //碰撞检测误差
 
-        private readonly Rect normalHitbox = new Rect(0, -0.25f, 0.8f, 1.1f);
-        private readonly Rect duckHitbox = new Rect(0, -0.5f, 0.8f, 0.6f);
-        private readonly Rect normalHurtbox = new Rect(0f, -0.15f, 0.8f, 0.9f);
-        private readonly Rect duckHurtbox = new Rect(8f, 4f, 0.8f, 0.4f);
+        // 碰撞盒从 PlayerRenderer 读取，可在 Inspector 中实时调整
+        private Rect normalHitbox;
+        private Rect runHitbox;
+        private Rect jumpHitbox;
+        private Rect duckHitbox;
+        private Rect normalHurtbox;
+        private Rect duckHurtbox;
+
+        // 从 PlayerRenderer 同步碰撞盒参数
+        public void SetHitboxes(Rect normal, Rect run, Rect jump, Rect duck)
+        {
+            normalHitbox = normal;
+            runHitbox = run;
+            jumpHitbox = jump;
+            duckHitbox = duck;
+            normalHurtbox = new Rect(normal.x, normal.y + 0.1f, normal.width, normal.height - 0.15f);
+            duckHurtbox = new Rect(duck.x, duck.y + 4f, duck.width, duck.height - 0.15f);
+        }
+
+        // 根据动画状态切换碰撞箱
+        public void SwitchHitbox(string animName)
+        {
+            if (Ducking) return; // 蹲伏时不变
+            if (animName == "Run")
+                this.collider = runHitbox;
+            else if (animName == "Jump")
+                this.collider = jumpHitbox;
+            else
+                this.collider = normalHitbox;
+        }
 
         private Rect collider;
 

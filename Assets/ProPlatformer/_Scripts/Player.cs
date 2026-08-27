@@ -42,15 +42,20 @@ namespace Myd.Platform
         //加载玩家实体
         public void Reload(Bounds bounds, Vector2 startPosition)
         {
+            // 加载女儿角色属性并应用到 Constants
+            var stats = Resources.Load<CharacterStats>("DaughterStats");
+            if (stats != null)
+            {
+                stats.ApplyToConstants();
+            }
+
             this.playerRenderer = Object.Instantiate(Resources.Load<PlayerRenderer>("PlayerRenderer"));
-            //this.playerRenderer = AssetHelper.Create<PlayerRenderer>("Assets/ProPlatformer/_Prefabs/PlayerRenderer.prefab");
             this.playerRenderer.Reload();
             //初始化
             this.playerController = new PlayerController(playerRenderer, gameContext.EffectControl);
             this.playerController.Init(bounds, startPosition);
 
             PlayerParams playerParams = Resources.Load<PlayerParams>("PlayerParam");
-            //PlayerParams playerParams = AssetHelper.LoadObject<PlayerParams>("Assets/ProPlatformer/PlayerParam.asset");
             playerParams.SetReloadCallback(() => this.playerController.RefreshAbility());
             playerParams.ReloadParams();
         }
@@ -66,7 +71,8 @@ namespace Myd.Platform
             playerRenderer.Render(Time.deltaTime);
 
             Vector2 scale = playerRenderer.transform.localScale;
-            scale.x = Mathf.Abs(scale.x) * (int)playerController.Facing;
+            //GIF角色原始朝向为左，因此朝右时翻转X
+            scale.x = -Mathf.Abs(scale.x) * (int)playerController.Facing;
             playerRenderer.transform.localScale = scale;
             playerRenderer.transform.position = playerController.Position;
 
