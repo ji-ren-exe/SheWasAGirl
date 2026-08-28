@@ -43,7 +43,8 @@ namespace Myd.Platform
 
         public void Add(SpriteRenderer renderer, int facing, Color color, float duration = 1f, bool frozenUpdate = false, bool useRawDeltaTime = false)
         {
-            Vector2 scale = renderer.transform.localScale;
+            // 使用根对象的完整世界缩放（含翻转负号），避免残影方向反向
+            Vector2 scale = renderer.transform.root.lossyScale;
             Add(renderer.transform.position, renderer.sprite, scale, facing, color, 2, duration, frozenUpdate, useRawDeltaTime);
         }
 

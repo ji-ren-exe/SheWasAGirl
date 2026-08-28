@@ -265,7 +265,8 @@ namespace Myd.Platform
 
         public void Trail(int face)
         {
-            SceneEffectManager.Instance.Add(this.spriteRenderer, face, Color.white);
+            // duration 0.45秒：残影保留更久，形成更明显的拖尾带
+            SceneEffectManager.Instance.Add(this.spriteRenderer, face, Color.white, 0.45f);
         }
 
         public void Scale(Vector2 scale)

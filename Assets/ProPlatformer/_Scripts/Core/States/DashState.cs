@@ -42,12 +42,15 @@ namespace Myd.Platform
 
         public override EActionState Update(float deltaTime)
         {
-            //Trail
+            //Trail：冲刺期间高频生成残影，形成密集拖尾
             if (ctx.DashTrailTimer > 0)
             {
                 ctx.DashTrailTimer -= deltaTime;
                 if (ctx.DashTrailTimer <= 0)
+                {
                     ctx.PlayTrailEffect((int)ctx.Facing);
+                    ctx.DashTrailTimer = .04f; // 循环生成，间隔0.04秒
+                }
             }
             //Grab Holdables
             //Super Jump
@@ -120,7 +123,7 @@ namespace Myd.Platform
             ctx.PlayDashEffect(ctx.Position, dir);
             ctx.SpriteControl.Slash(true);
             ctx.PlayTrailEffect((int)ctx.Facing);
-            ctx.DashTrailTimer = .08f;
+            ctx.DashTrailTimer = .04f;
             yield return Constants.DashTime;
 
             ctx.SpriteControl.Slash(false);
