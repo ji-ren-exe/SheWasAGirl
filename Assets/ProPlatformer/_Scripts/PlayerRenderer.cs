@@ -40,6 +40,18 @@ namespace Myd.Platform
         // 像素图分辨率，用于统一缩放到碰撞盒大小
         [SerializeField] private float spritePixelHeight = 86f;
 
+        // --- 母亲帧动画 ---
+        [Header("母亲动画")]
+        [SerializeField] private Sprite[] motherIdleFrames;
+        [SerializeField] private Sprite[] motherRunFrames;
+        [SerializeField] private Sprite[] motherJumpFrames;
+        // 母亲精灵缩放：母亲图 182px / 女儿图 70px ≈ 2.6，取倒数使母亲视觉大小接近女儿
+        [SerializeField] private float motherSpriteScale = 0.38f;
+        // 母亲精灵 Y 偏移：在 Sprite 子物体原始 localPosition 基础上叠加
+        [SerializeField] private float motherSpriteYOffset = 0f;
+        // 当前激活角色：0=女儿, 1=母亲
+        public int ActiveCharacter { get; private set; } = 0;
+
         // --- 可在 Inspector 中实时调整的碰撞盒参数 ---
         // 基于 GIF 有效像素分析：Idle 画布 85x86 像素全部为角色本体，PPU=25
         // 碰撞箱基于各 GIF 有效像素边界计算，PPU=25
@@ -67,14 +79,11 @@ namespace Myd.Platform
         [Header("音效")]
         [SerializeField] private AudioClip footstepClip;
         [SerializeField] private AudioClip jumpClip;
-        [SerializeField] private AudioClip heavyLandClip;
         [SerializeField] private float footstepInterval = 0.3f;
         private AudioSource audioSource;
         // 一次性音效专用源：与脚步声循环源分离，避免被 Pause 阻塞/延迟补播
         private AudioSource oneShotAudioSource;
         private float footstepTimer;
-        // 记录起跳时的高度，用于判断是否为高落差落地
-        private float jumpStartY;
 
         private void Awake()
         {
@@ -94,6 +103,9 @@ namespace Myd.Platform
         public void Reload()
         {
             LoadFrames();
+            LoadMotherFrames();
+            // 缓存 Sprite 子物体初始 localPosition（切换角色时在此基础上叠加偏移）
+            spriteRendererBaseLocalPos = spriteRenderer.transform.localPosition;
             DisableOriginalHair();
             AttachStaminaRing();
             EnsureGlobalUI();
@@ -222,6 +234,25 @@ namespace Myd.Platform
             return result;
         }
 
+        private void LoadMotherFrames()
+        {
+            motherIdleFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherIdle.png");
+            motherRunFrames  = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherRun.png");
+            // 没有母亲跳跃图集，暂用站立帧兜底
+            motherJumpFrames = motherIdleFrames;
+        }
+
+        /// <summary>
+        /// 切换角色（0=女儿, 1=母亲），重置动画状态
+        /// </summary>
+        public void SwitchCharacter(int charId)
+        {
+            ActiveCharacter = charId;
+            currentAnim = AnimState.Idle;
+            frameIndex = 0;
+            frameTimer = 0f;
+        }
+
         public void Render(float deltaTime)
         {
             UpdateAnimation(deltaTime);
@@ -229,8 +260,23 @@ namespace Myd.Platform
             float tempScaleX = Mathf.MoveTowards(scale.x, currSpriteScale.x, 1.75f * deltaTime);
             float tempScaleY = Mathf.MoveTowards(scale.y, currSpriteScale.y, 1.75f * deltaTime);
             this.scale = new Vector2(tempScaleX, tempScaleY);
-            this.spriteRenderer.transform.localScale = scale;
+
+            if (ActiveCharacter == 1)
+            {
+                // 母亲：等比缩放（不拉伸）+ 在原始 localPosition 基础上叠加 Y 偏移
+                this.spriteRenderer.transform.localScale = new Vector3(scale.x * motherSpriteScale, scale.y * motherSpriteScale, 1f);
+                var lp = spriteRendererBaseLocalPos;
+                this.spriteRenderer.transform.localPosition = new Vector3(lp.x, lp.y + motherSpriteYOffset, lp.z);
+            }
+            else
+            {
+                // 女儿：保持原始逻辑
+                this.spriteRenderer.transform.localScale = scale;
+                this.spriteRenderer.transform.localPosition = spriteRendererBaseLocalPos;
+            }
         }
+
+        private Vector3 spriteRendererBaseLocalPos;
 
         private void UpdateAnimation(float deltaTime)
         {
@@ -271,11 +317,24 @@ namespace Myd.Platform
 
             Sprite[] frames;
             float fps;
-            switch (currentAnim)
+            // 根据当前角色选择帧数组
+            if (ActiveCharacter == 1)
             {
-                case AnimState.Run:  frames = runFrames;  fps = runFPS;  break;
-                case AnimState.Jump:  frames = jumpFrames;  fps = jumpFPS;  break;
-                default:             frames = idleFrames;  fps = idleFPS;  break;
+                switch (currentAnim)
+                {
+                    case AnimState.Run:  frames = motherRunFrames;  fps = runFPS;  break;
+                    case AnimState.Jump:  frames = motherJumpFrames;  fps = jumpFPS;  break;
+                    default:             frames = motherIdleFrames;  fps = idleFPS;  break;
+                }
+            }
+            else
+            {
+                switch (currentAnim)
+                {
+                    case AnimState.Run:  frames = runFrames;  fps = runFPS;  break;
+                    case AnimState.Jump:  frames = jumpFrames;  fps = jumpFPS;  break;
+                    default:             frames = idleFrames;  fps = idleFPS;  break;
+                }
             }
 
             if (frames == null || frames.Length == 0) return;
@@ -290,9 +349,9 @@ namespace Myd.Platform
 
             spriteRenderer.sprite = frames[frameIndex];
 
-            // 跑步缩小到0.8，跳跃放大到1.2，站立为1.0
+            // 跑步缩小到0.8（母亲跑步放大到1.2），跳跃放大到1.2，站立为1.0
             float animScale = 1f;
-            if (currentAnim == AnimState.Run) animScale = 0.8f;
+            if (currentAnim == AnimState.Run) animScale = ActiveCharacter == 1 ? 1.1f : 0.8f;
             else if (currentAnim == AnimState.Jump) animScale = 1.2f;
             currSpriteScale = new Vector2(animScale, animScale);
 
@@ -333,18 +392,6 @@ namespace Myd.Platform
                 if (GetVerticalSpeed() > 0.1f)
                 {
                     PlayClip(jumpClip, 0.8f);
-                }
-                jumpStartY = transform.position.y;
-            }
-
-            // 高处落地震动音效：从空中落地且落差超过 4 个角色身高(4×2.68≈10.7)
-            float heavyLandThreshold = 10.7f;
-            if (!wasOnGroundLastFrame && onGround)
-            {
-                float fallDistance = jumpStartY - transform.position.y;
-                if (fallDistance > heavyLandThreshold)
-                {
-                    PlayClip(heavyLandClip, 1f);
                 }
             }
 

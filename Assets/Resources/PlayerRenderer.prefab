@@ -5166,6 +5166,11 @@ MonoBehaviour:
   runFPS: 12
   jumpFPS: 10
   spritePixelHeight: 86
+  motherIdleFrames: []
+  motherRunFrames: []
+  motherJumpFrames: []
+  motherSpriteScale: 0.38
+  motherSpriteYOffset: 1.2
   normalHitbox:
     serializedVersion: 2
     x: 0
@@ -5192,7 +5197,6 @@ MonoBehaviour:
     height: 0.6
   footstepClip: {fileID: 8300000, guid: aa6d18b5634b98b4d9092ceb23fdd25c, type: 3}
   jumpClip: {fileID: 8300000, guid: 0d07921e037fa234c8205ffecdf0c0e7, type: 3}
-  heavyLandClip: {fileID: 8300000, guid: 098cb0ed512ecae499d76a015ccf6ec3, type: 3}
   footstepInterval: 0.3
 --- !u!114 &4509220662286137586
 MonoBehaviour:
