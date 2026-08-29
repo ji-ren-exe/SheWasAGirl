@@ -20,6 +20,10 @@ namespace Myd.Platform
         [SerializeField] private Vector2 triggerSize = new Vector2(2f, 4f);
         [Tooltip("切换前是否保留目标场景已有内容（Additive）——一般不用")]
         [SerializeField] private bool additive = false;
+        [Tooltip("需要按X键交互才触发（而非自动触发）")]
+        [SerializeField] private bool requireInteraction = false;
+        [Tooltip("交互提示文本（requireInteraction=true 时显示）")]
+        [SerializeField] private string hintText = "按 X 交互";
 
         [Header("黑屏过渡")]
         [Tooltip("黑屏淡入时长（触发→全黑）")]
@@ -28,6 +32,54 @@ namespace Myd.Platform
         [SerializeField] private float fadeOutDuration = 0.5f;
 
         private bool triggered;
+        private RectTransform hintRoot;
+        private UnityEngine.UI.Text hintLabel;
+
+        private void Start()
+        {
+            if (requireInteraction) BuildHintUI();
+        }
+
+        private void BuildHintUI()
+        {
+            // 查找任意 Canvas（DialogueManager 的 Canvas 或自建）
+            Canvas canvas = FindObjectOfType<Canvas>();
+            if (canvas == null)
+            {
+                var go = new GameObject("SceneTransitionCanvas");
+                canvas = go.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 500;
+                go.AddComponent<UnityEngine.UI.CanvasScaler>();
+            }
+
+            hintRoot = new GameObject("TransitionHint").AddComponent<RectTransform>();
+            hintRoot.SetParent(canvas.transform, false);
+            hintRoot.sizeDelta = new Vector2(120f, 34f);
+            hintRoot.gameObject.SetActive(false);
+
+            var bg = hintRoot.gameObject.AddComponent<UnityEngine.UI.Image>();
+            bg.color = new Color(0f, 0f, 0f, 0.6f);
+            bg.raycastTarget = false;
+
+            var textGo = new GameObject("HintText");
+            var textRect = textGo.AddComponent<RectTransform>();
+            textRect.SetParent(hintRoot, false);
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = new Vector2(4f, 2f);
+            textRect.offsetMax = new Vector2(-4f, -2f);
+            hintLabel = textGo.AddComponent<UnityEngine.UI.Text>();
+            hintLabel.fontSize = 18;
+            hintLabel.color = Color.white;
+            hintLabel.alignment = TextAnchor.MiddleCenter;
+            hintLabel.text = hintText;
+            hintLabel.raycastTarget = false;
+
+            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            hintLabel.font = font;
+        }
 
         private void Update()
         {
@@ -40,11 +92,55 @@ namespace Myd.Platform
             bool inRange = Mathf.Abs(player.Position.x - pos.x) <= triggerSize.x * 0.5f
                 && Mathf.Abs(player.Position.y - pos.y) <= triggerSize.y * 0.5f;
 
-            if (inRange)
+            if (requireInteraction)
             {
-                triggered = true;
-                StartCoroutine(TransitionRoutine());
+                // 显示/隐藏提示
+                if (inRange) ShowHint(); else HideHint();
+
+                // 按X键触发
+                if (inRange && (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.JoystickButton2)))
+                {
+                    triggered = true;
+                    HideHint();
+                    StartCoroutine(TransitionRoutine());
+                }
             }
+            else
+            {
+                if (inRange)
+                {
+                    triggered = true;
+                    StartCoroutine(TransitionRoutine());
+                }
+            }
+        }
+
+        private void ShowHint()
+        {
+            if (hintRoot == null) return;
+            hintRoot.gameObject.SetActive(true);
+
+            var cam = Camera.main;
+            if (cam == null) return;
+            Vector2 worldPos = transform.position + Vector3.up * 1.2f;
+            Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(cam, worldPos);
+            var canvas = hintRoot.GetComponentInParent<Canvas>();
+            Vector2 localPos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvas.transform as RectTransform, screenPos, canvas.worldCamera, out localPos);
+            hintRoot.anchoredPosition = localPos;
+        }
+
+        private void HideHint()
+        {
+            if (hintRoot != null && hintRoot.gameObject.activeSelf)
+                hintRoot.gameObject.SetActive(false);
+        }
+
+        private void OnDestroy()
+        {
+            if (hintRoot != null)
+                Destroy(hintRoot.gameObject);
         }
 
         private IEnumerator TransitionRoutine()
@@ -174,14 +270,16 @@ namespace Myd.Platform
 
         private void OnDrawGizmosSelected()
         {
-            // 触发范围可视化（橙黄色）
-            Gizmos.color = new Color(1f, 0.75f, 0.1f, 0.3f);
+            // 触发范围可视化（橙黄色=自动触发，青色=按键交互）
+            var c = requireInteraction ? new Color(0.3f, 0.8f, 1f) : new Color(1f, 0.75f, 0.1f);
+            Gizmos.color = new Color(c.r, c.g, c.b, 0.3f);
             Gizmos.DrawCube(transform.position, triggerSize);
-            Gizmos.color = new Color(1f, 0.75f, 0.1f);
+            Gizmos.color = c;
             Gizmos.DrawWireCube(transform.position, triggerSize);
 
             // 标注目标场景名
-            UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f, $"→ {targetSceneName}");
+            var label = requireInteraction ? $"→ {targetSceneName} (按X)" : $"→ {targetSceneName}";
+            UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f, label);
         }
     }
 }

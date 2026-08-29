@@ -152,6 +152,14 @@ namespace Myd.Platform.Dialogue
 
         private DialogueSpeaker defaultSpeakerForDialogue;
 
+        private IEnumerator PlayDelayedSound(AudioClip clip, float delay, float volume)
+        {
+            if (delay > 0f)
+                yield return new WaitForSeconds(delay);
+            if (audioSource != null && clip != null)
+                audioSource.PlayOneShot(clip, volume);
+        }
+
         private IEnumerator PlayRoutine(DialogueData data)
         {
             bubbleRoot.gameObject.SetActive(true);
@@ -176,6 +184,14 @@ namespace Myd.Platform.Dialogue
                     audioSource.PlayOneShot(bubbleSound, bubbleSoundVolume);
                 }
 
+                // 延迟音效：气泡出现后延迟播放（如电话铃声）
+                UnityEngine.Coroutine delayedSoundCo = null;
+                if (bubble.delayedSound != null)
+                {
+                    delayedSoundCo = StartCoroutine(PlayDelayedSound(
+                        bubble.delayedSound, bubble.delayedSoundDelay, bubble.delayedSoundVolume));
+                }
+
                 // 打字机效果
                 textLabel.text = "";
                 foreach (char c in bubble.text)
@@ -196,6 +212,9 @@ namespace Myd.Platform.Dialogue
                         || Input.GetKeyDown(KeyCode.Return)
                         || Input.GetKeyDown(KeyCode.JoystickButton2));
                 }
+
+                // 气泡结束，停止延迟音效（如还在播）
+                if (delayedSoundCo != null) StopCoroutine(delayedSoundCo);
             }
 
             // 淡出
