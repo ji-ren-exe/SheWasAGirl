@@ -35,5 +35,15 @@ namespace Myd.Platform.Dialogue
         [Tooltip("对话ID，用于触发去重")]
         public string dialogueId;
         public List<DialogueBubble> bubbles = new List<DialogueBubble>();
+
+        [Header("气泡位置")]
+        [Tooltip("气泡位置模式：Default=跟随面朝方向，LeftBottom=固定角色左下方")]
+        public BubblePositionMode bubblePosition = BubblePositionMode.Default;
+    }
+
+    public enum BubblePositionMode
+    {
+        Default,
+        LeftBottom
     }
 }

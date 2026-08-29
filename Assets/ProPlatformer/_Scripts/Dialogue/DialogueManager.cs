@@ -35,6 +35,8 @@ namespace Myd.Platform.Dialogue
         private AudioSource audioSource;
         // 当前气泡的说话者（null=玩家）
         private DialogueSpeaker currentSpeaker;
+        // 当前对话数据（用于读取气泡位置模式）
+        private DialogueData currentDialogue;
 
         // 已播放过的对话ID（运行时去重）
         private HashSet<string> playedIds = new HashSet<string>();
@@ -146,6 +148,7 @@ namespace Myd.Platform.Dialogue
             }
 
             defaultSpeakerForDialogue = defaultSpeaker;
+            currentDialogue = data;
             if (playing != null) StopCoroutine(playing);
             playing = StartCoroutine(PlayRoutine(data));
         }
@@ -224,6 +227,7 @@ namespace Myd.Platform.Dialogue
             if (audioSource != null && audioSource.isPlaying)
                 audioSource.Stop();
             currentSpeaker = null;
+            currentDialogue = null;
             playing = null;
         }
 
@@ -292,7 +296,11 @@ namespace Myd.Platform.Dialogue
             Vector2 localPos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvas.transform as RectTransform, screenPos, canvas.worldCamera, out localPos);
-            bubbleRoot.anchoredPosition = localPos + new Vector2(bubbleOffsetX * side, bubbleOffsetY);
+            // 根据对话数据的位置模式决定气泡偏移
+            if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.LeftBottom)
+                bubbleRoot.anchoredPosition = localPos + new Vector2(-bubbleOffsetX, -bubbleOffsetY);
+            else
+                bubbleRoot.anchoredPosition = localPos + new Vector2(bubbleOffsetX * side, bubbleOffsetY);
         }
     }
 }

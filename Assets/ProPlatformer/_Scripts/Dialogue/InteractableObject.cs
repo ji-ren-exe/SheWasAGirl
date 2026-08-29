@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 namespace Myd.Platform.Dialogue
 {
@@ -21,6 +22,10 @@ namespace Myd.Platform.Dialogue
         [SerializeField] private bool selfAsSpeaker = false;
         [Tooltip("交互提示文本")]
         [SerializeField] private string hintText = "按 X 交互";
+        [Tooltip("按X后启动修锁小游戏（而非对话）")]
+        [SerializeField] private bool lockPickingMode = false;
+        [Tooltip("对话播放完成后自动启动修锁小游戏")]
+        [SerializeField] private bool lockPickingAfterDialogue = false;
 
         private bool hasInteracted;
         private bool playerInRange;
@@ -32,6 +37,18 @@ namespace Myd.Platform.Dialogue
 
         private void Start()
         {
+            StartCoroutine(DelayedInit());
+        }
+
+        private IEnumerator DelayedInit()
+        {
+            // 等待 DialogueManager 就绪（PlayerRenderer.EnsureGlobalUI 创建）
+            float timeout = 5f;
+            while (DialogueManager.Instance == null && timeout > 0f)
+            {
+                timeout -= Time.deltaTime;
+                yield return null;
+            }
             manager = DialogueManager.Instance;
             BuildHintUI();
         }
@@ -132,12 +149,69 @@ namespace Myd.Platform.Dialogue
         /// </summary>
         public void Interact()
         {
-            if (dialogue == null || manager == null) return;
             if (interactOnce && hasInteracted) return;
             hasInteracted = true;
             HideHint();
+
+            if (lockPickingMode)
+            {
+                var gameGo = new GameObject("LockPickingGame");
+                var game = gameGo.AddComponent<Myd.Platform.LockPickingGame>();
+                game.StartGame(
+                    onSuccess: () =>
+                    {
+                        // 在新门上创建开门触发器
+                        var newDoor = GameObject.Find("新门");
+                        if (newDoor != null)
+                        {
+                            var openerGo = new GameObject("DoorOpener");
+                            openerGo.transform.SetParent(newDoor.transform, false);
+                            openerGo.transform.localPosition = Vector3.zero;
+                            var opener = openerGo.AddComponent<Myd.Platform.DoorOpener>();
+                            opener.targetSceneName = "scence2_4";
+                        }
+                    },
+                    onCancel: () => { /* 重新允许交互 */ hasInteracted = false; }
+                );
+                return;
+            }
+
+            if (dialogue == null || manager == null) return;
             DialogueSpeaker speaker = selfAsSpeaker ? GetComponent<DialogueSpeaker>() : null;
+
+            if (lockPickingAfterDialogue)
+            {
+                StartCoroutine(PlayDialogueThenLockPicking(speaker));
+                return;
+            }
+
             manager.Play(dialogue, speaker);
+        }
+
+        private IEnumerator PlayDialogueThenLockPicking(DialogueSpeaker speaker)
+        {
+            manager.Play(dialogue, speaker);
+            yield return new WaitWhile(() => manager.IsPlaying);
+
+            // 对话结束后启动修锁小游戏
+            var gameGo = new GameObject("LockPickingGame");
+            var game = gameGo.AddComponent<Myd.Platform.LockPickingGame>();
+            game.StartGame(
+                onSuccess: () =>
+                {
+                    // 在新门上创建一个独立的提示+开门触发器
+                    var newDoor = GameObject.Find("新门");
+                    if (newDoor != null)
+                    {
+                        var openerGo = new GameObject("DoorOpener");
+                        openerGo.transform.SetParent(newDoor.transform, false);
+                        openerGo.transform.localPosition = Vector3.zero;
+                        var opener = openerGo.AddComponent<Myd.Platform.DoorOpener>();
+                        opener.targetSceneName = "scence2_4";
+                    }
+                },
+                onCancel: () => { hasInteracted = false; }
+            );
         }
 
         private void OnDestroy()

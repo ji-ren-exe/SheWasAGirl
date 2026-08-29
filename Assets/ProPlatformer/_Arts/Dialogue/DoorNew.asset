@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3b80b22ee2fbbba41b0ef64ab39ff9f5, type: 3}
-  m_Name: Door2-3
+  m_Name: DoorNew
   m_EditorClassIdentifier: 
-  dialogueId: Door2-3
+  dialogueId: DoorNew
   bubbles:
   - portrait: {fileID: 0}
-    text: "\u9501\u5DF2\u7ECF\u5F7B\u5E95\u574F\u4E86\uFF0C\u65E9\u4E9B\u6765\u4FEE\u6216\u8BB8\u80FD\u4FEE\u597D"
+    text: "\u9501\u574F\u592A\u4E45\u4E86\uFF0C\u65E9\u4E9B\u6765\u6216\u8BB8\u80FD\u4FEE\u597D"
     duration: 3
     speakerId: 0
     delayedSound: {fileID: 0}
     delayedSoundDelay: 1
     delayedSoundVolume: 1
+  bubblePosition: 1
