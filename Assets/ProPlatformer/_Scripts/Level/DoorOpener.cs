@@ -119,6 +119,13 @@ namespace Myd.Platform
 
         private System.Collections.IEnumerator TransitionRoutine()
         {
+            // 切场景前强制结束对话
+            var dm = FindObjectOfType<Dialogue.DialogueManager>();
+            if (dm != null && dm.IsPlaying)
+            {
+                dm.StopDialogue();
+            }
+
             // 黑屏淡入
             var go = new GameObject("DoorFadeCanvas");
             DontDestroyOnLoad(go);

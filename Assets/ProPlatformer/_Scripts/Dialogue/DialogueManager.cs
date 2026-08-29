@@ -133,6 +133,19 @@ namespace Myd.Platform.Dialogue
         }
 
         /// <summary>
+        /// 强制停止当前对话：停协程+隐藏气泡+停音效
+        /// </summary>
+        public void StopDialogue()
+        {
+            if (playing != null) StopCoroutine(playing);
+            playing = null;
+            if (bubbleRoot != null) bubbleRoot.gameObject.SetActive(false);
+            if (audioSource != null && audioSource.isPlaying) audioSource.Stop();
+            currentSpeaker = null;
+            currentDialogue = null;
+        }
+
+        /// <summary>
         /// 播放对话（可指定默认说话者，气泡中 speakerId 匹配场景 Speaker 或回落到该默认值/玩家）
         /// </summary>
         public void Play(DialogueData data, DialogueSpeaker defaultSpeaker)

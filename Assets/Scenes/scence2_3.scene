@@ -441,6 +441,7 @@ GameObject:
   - component: {fileID: 374645085}
   - component: {fileID: 374645086}
   - component: {fileID: 374645087}
+  - component: {fileID: 374645088}
   m_Layer: 0
   m_HasEditorInfo: 1
   m_Name: Game
@@ -548,6 +549,21 @@ MonoBehaviour:
   spawnA: {x: 2, y: -9.726186}
   spawnB: {x: 2, y: -44.524086}
   switchCooldown: 0.5
+--- !u!114 &374645088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374645081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8375e110371e10c44b52199b4d33f043, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  quest: {fileID: 11400000, guid: ff5dfe977cde30648b8f4faa3c4011b3, type: 2}
+  triggerSize: {x: 50, y: 50}
+  triggerOnce: 1
 --- !u!1001 &544687271
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1183,59 +1199,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83253eeebb83c9040a6a31155eae3a61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &890455658
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
-  m_Component:
-  - component: {fileID: 890455660}
-  - component: {fileID: 890455659}
-  m_Layer: 0
-  m_HasEditorInfo: 1
-  m_Name: DoorTransition_To2_4
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &890455659
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 890455658}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 232927c064e91bf46b6688583b32dcd1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetSceneName: scence2_4
-  triggerSize: {x: 3, y: 4}
-  additive: 0
-  requireInteraction: 1
-  hintText: "\u6309 X \u5F00\u95E8"
-  externalTriggerOnly: 0
-  fadeInDuration: 0.4
-  fadeOutDuration: 0.5
---- !u!4 &890455660
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 890455658}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.45, y: -0.84, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &901474128
 GameObject:
   m_ObjectHideFlags: 0
@@ -2014,4 +1977,3 @@ SceneRoots:
   - {fileID: 1594762000}
   - {fileID: 1421103654}
   - {fileID: 373134231}
-  - {fileID: 890455660}

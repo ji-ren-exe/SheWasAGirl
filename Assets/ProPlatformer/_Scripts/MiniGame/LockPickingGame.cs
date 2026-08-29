@@ -7,6 +7,7 @@ namespace Myd.Platform
     /// <summary>
     /// 修锁小游戏：三个同心圆环各有缺口，旋转到缺口对齐即成功。
     /// 像素风：程序化绘制圆环贴图。A/D切换圆环，W/S旋转，手柄左摇杆同效。
+    /// 游戏期间暂停角色控制（Time.timeScale=0）。
     /// </summary>
     public class LockPickingGame : MonoBehaviour
     {
@@ -31,6 +32,9 @@ namespace Myd.Platform
         private float inputCooldown;
         private const float CooldownTime = 0.2f;
 
+        // 锁打开音效
+        private AudioSource audioSource;
+
         private static readonly Color SelectedColor = new Color(1f, 0.85f, 0.3f);
         private static readonly Color NormalColor = new Color(0.7f, 0.7f, 0.7f);
         private static readonly Color SuccessColor = new Color(0.3f, 1f, 0.4f);
@@ -43,6 +47,14 @@ namespace Myd.Platform
         {
             this.onSuccess = onSuccess;
             this.onCancel = onCancel;
+
+            // 暂停游戏逻辑（角色不再移动），UI 仍用 unscaledDeltaTime 运行
+            Time.timeScale = 0f;
+
+            // 创建独立 AudioSource 播放音效
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 0f;
 
             for (int i = 0; i < RingCount; i++)
                 ringAngles[i] = UnityEngine.Random.Range(0, 360);
@@ -113,6 +125,9 @@ namespace Myd.Platform
             isDone = true;
             isPlaying = false;
 
+            // 播放锁打开音效
+            PlayUnlockSound();
+
             for (int i = 0; i < RingCount; i++)
             {
                 if (ringImages[i] != null)
@@ -123,13 +138,23 @@ namespace Myd.Platform
                 statusText.text = "咔嗒！锁开了！";
 
             Debug.Log("[LockPickingGame] Success!");
-            StartCoroutine(DelayedCallback(1.5f, () => { onSuccess?.Invoke(); Cleanup(); }));
+            StartCoroutine(DelayedCallback(1.5f, () =>
+            {
+                // 恢复游戏
+                Time.timeScale = 1f;
+                // 自动切换角色
+                var csc = FindObjectOfType<CharacterSwitchController>();
+                if (csc != null) csc.SwitchCharacter();
+                onSuccess?.Invoke();
+                Cleanup();
+            }));
         }
 
         private void Cancel()
         {
             isPlaying = false;
             isDone = true;
+            Time.timeScale = 1f;
             Debug.Log("[LockPickingGame] Cancelled");
             onCancel?.Invoke();
             Cleanup();
@@ -148,6 +173,38 @@ namespace Myd.Platform
             if (d > 180f) d -= 360f;
             if (d < -180f) d += 360f;
             return d;
+        }
+
+        /// <summary>
+        /// 程序化生成"咔嗒"锁开音效（无外部音频文件）
+        /// </summary>
+        private void PlayUnlockSound()
+        {
+            if (audioSource == null) return;
+
+            int sampleRate = 44100;
+            float duration = 0.3f;
+            int samples = (int)(sampleRate * duration);
+            var clip = AudioClip.Create("Unlock", samples, 1, sampleRate, false);
+            var data = new float[samples];
+
+            // 前半段：金属碰撞咔嗒声（高频快速衰减）
+            for (int i = 0; i < samples / 2; i++)
+            {
+                float t = (float)i / sampleRate;
+                float env = Mathf.Exp(-t * 40f);
+                data[i] = (Mathf.Sin(t * 2000f * Mathf.PI) + UnityEngine.Random.Range(-0.3f, 0.3f)) * env * 0.5f;
+            }
+            // 后半段：低沉解锁声
+            for (int i = samples / 2; i < samples; i++)
+            {
+                float t = (float)(i - samples / 2) / sampleRate;
+                float env = Mathf.Exp(-t * 8f);
+                data[i] = Mathf.Sin(t * 400f * Mathf.PI) * env * 0.4f;
+            }
+
+            clip.SetData(data, 0);
+            audioSource.PlayOneShot(clip, 0.8f);
         }
 
         private void BuildUI()

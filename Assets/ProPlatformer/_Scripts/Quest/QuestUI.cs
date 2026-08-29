@@ -11,12 +11,12 @@ namespace Myd.Platform.Quest
         public static QuestUI Instance { get; private set; }
 
         [Header("UI样式")]
-        [SerializeField] private float panelWidth = 320f;
-        [SerializeField] private float panelHeight = 150f;
-        [SerializeField] private float marginX = 24f;
-        [SerializeField] private float marginY = 24f;
-        [SerializeField] private int titleFontSize = 18;
-        [SerializeField] private int descFontSize = 13;
+        [SerializeField] private float panelWidth = 180f;
+        [SerializeField] private float panelHeight = 70f;
+        [SerializeField] private float marginX = 14f;
+        [SerializeField] private float marginY = 14f;
+        [SerializeField] private int titleFontSize = 12;
+        [SerializeField] private int descFontSize = 10;
 
         [Header("黑板贴图")]
         [SerializeField] private Sprite blackboardSprite;
@@ -27,8 +27,6 @@ namespace Myd.Platform.Quest
 
         private RectTransform panelRoot;
         private UnityEngine.UI.Image boardImage;
-        private UnityEngine.UI.Image chalkLineImage;
-        private UnityEngine.UI.Text titleLabel;
         private UnityEngine.UI.Text descLabel;
         private CanvasGroup canvasGroup;
 
@@ -84,48 +82,14 @@ namespace Myd.Platform.Quest
             boardImage.preserveAspect = false;
             boardImage.raycastTarget = false;
 
-            // 标题（粉笔白，居中，自动缩字号适应宽度）
-            var titleGo = new GameObject("Title");
-            var titleRect = titleGo.AddComponent<RectTransform>();
-            titleRect.SetParent(panelRoot, false);
-            titleRect.anchorMin = new Vector2(0, 1);
-            titleRect.anchorMax = new Vector2(1, 1);
-            titleRect.pivot = new Vector2(0.5f, 1);
-            titleRect.anchoredPosition = new Vector2(0, -16f);
-            titleRect.sizeDelta = new Vector2(-32f, titleFontSize + 8f);
-            titleLabel = titleGo.AddComponent<UnityEngine.UI.Text>();
-            titleLabel.fontSize = titleFontSize;
-            titleLabel.resizeTextForBestFit = true;      // 自适应：字号在范围内自动缩小
-            titleLabel.resizeTextMinSize = 10;
-            titleLabel.resizeTextMaxSize = titleFontSize;
-            titleLabel.color = new Color(0.97f, 0.96f, 0.92f, 1f); // 粉笔白
-            titleLabel.alignment = TextAnchor.UpperCenter;          // 居中
-            titleLabel.raycastTarget = false;
-            titleLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
-            titleLabel.verticalOverflow = VerticalWrapMode.Overflow;
-
-            // 粉笔下划线（标题下方，手绘风，居中）
-            var lineGo = new GameObject("ChalkLine");
-            var lineRect = lineGo.AddComponent<RectTransform>();
-            lineRect.SetParent(panelRoot, false);
-            lineRect.anchorMin = new Vector2(0.5f, 1);
-            lineRect.anchorMax = new Vector2(0.5f, 1);
-            lineRect.pivot = new Vector2(0.5f, 1);
-            lineRect.anchoredPosition = new Vector2(0, -(titleFontSize + 24f));
-            lineRect.sizeDelta = new Vector2(200f, 6f);
-            chalkLineImage = lineGo.AddComponent<UnityEngine.UI.Image>();
-            chalkLineImage.sprite = chalkLineSprite;
-            chalkLineImage.preserveAspect = true;
-            chalkLineImage.raycastTarget = false;
-
             // 描述（浅粉笔色，居中，自适应字号）
             var descGo = new GameObject("Description");
             var descRect = descGo.AddComponent<RectTransform>();
             descRect.SetParent(panelRoot, false);
-            descRect.anchorMin = new Vector2(0, 1);
-            descRect.anchorMax = new Vector2(1, 1);
-            descRect.pivot = new Vector2(0.5f, 1);
-            descRect.anchoredPosition = new Vector2(0, -(titleFontSize + 36f));
+            descRect.anchorMin = new Vector2(0, 0.5f);
+            descRect.anchorMax = new Vector2(1, 0.5f);
+            descRect.pivot = new Vector2(0.5f, 0.5f);
+            descRect.anchoredPosition = Vector2.zero;
             descRect.sizeDelta = new Vector2(-32f, descFontSize * 3f + 8f);
             descLabel = descGo.AddComponent<UnityEngine.UI.Text>();
             descLabel.fontSize = descFontSize;
@@ -133,7 +97,7 @@ namespace Myd.Platform.Quest
             descLabel.resizeTextMinSize = 9;
             descLabel.resizeTextMaxSize = descFontSize;
             descLabel.color = new Color(0.88f, 0.9f, 0.85f, 0.92f); // 浅粉笔色
-            descLabel.alignment = TextAnchor.UpperCenter;           // 居中
+            descLabel.alignment = TextAnchor.MiddleCenter;           // 居中
             descLabel.raycastTarget = false;
             descLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
             descLabel.verticalOverflow = VerticalWrapMode.Overflow;
@@ -141,7 +105,6 @@ namespace Myd.Platform.Quest
             // 字体
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            titleLabel.font = font;
             descLabel.font = font;
 
             panelRoot.gameObject.SetActive(false);
@@ -180,7 +143,6 @@ namespace Myd.Platform.Quest
 
         private void ApplyQuestText(QuestData quest)
         {
-            titleLabel.text = quest.title;
             descLabel.text = quest.description;
         }
 
