@@ -44,6 +44,9 @@ namespace Myd.Platform.Dialogue
     public enum BubblePositionMode
     {
         Default,
-        LeftBottom
+        LeftBottom,
+        CenterTop,   // 锚点正上方居中（不随面朝方向偏移，靠边物体防出屏）
+        LeftTop,     // 锚点上方偏左侧（固定朝左，靠右屏边物体用）
+        ScreenCenter // 画面正中央（过场独白用）
     }
 }

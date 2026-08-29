@@ -296,8 +296,9 @@ namespace Myd.Platform.Dialogue
             }
             else if (Player.Current != null)
             {
-                // 玩家：气泡出现在面朝方向的一侧
-                anchorWorld = Player.Current.Position + Vector2.up * 1.5f;
+                // 玩家：锚点取实际精灵头顶上方 0.5（bounds 自适应——场景放大/母女切换/动画缩放均贴头顶，
+                // 常规场景头顶≈2.0，锚点=1.5 与原固定值等价），像素偏移不缩放保持正常距离
+                anchorWorld = new Vector2(Player.Current.Position.x, GetPlayerSpriteTopY() - 0.5f);
                 side = (int)Player.Current.Facing;
             }
             else
@@ -305,15 +306,39 @@ namespace Myd.Platform.Dialogue
                 return;
             }
 
+            // 根据对话数据的位置模式决定气泡偏移
+            if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.ScreenCenter)
+            {
+                // 画面正中央（过场独白）：不跟随锚点，直接屏幕中心
+                bubbleRoot.anchoredPosition = Vector2.zero;
+                return;
+            }
             Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(Camera.main, anchorWorld);
             Vector2 localPos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvas.transform as RectTransform, screenPos, canvas.worldCamera, out localPos);
-            // 根据对话数据的位置模式决定气泡偏移
             if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.LeftBottom)
                 bubbleRoot.anchoredPosition = localPos + new Vector2(-bubbleOffsetX, -bubbleOffsetY);
+            else if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.CenterTop)
+                bubbleRoot.anchoredPosition = localPos + new Vector2(0f, bubbleOffsetY);   // 正上方居中，防靠边出屏
+            else if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.LeftTop)
+                bubbleRoot.anchoredPosition = localPos + new Vector2(-bubbleOffsetX, bubbleOffsetY);   // 上方偏左（固定），靠右屏边物体用
             else
                 bubbleRoot.anchoredPosition = localPos + new Vector2(bubbleOffsetX * side, bubbleOffsetY);
+        }
+
+        // 玩家精灵实际头顶世界Y（含场景缩放/母女切换/动画帧），找不到渲染器时退回固定高度
+        private SpriteRenderer playerSpriteCache;
+        private float GetPlayerSpriteTopY()
+        {
+            if (playerSpriteCache == null)
+            {
+                var pr = FindObjectOfType<PlayerRenderer>();
+                playerSpriteCache = pr != null ? pr.GetComponentInChildren<SpriteRenderer>() : null;
+            }
+            if (playerSpriteCache == null)
+                return Player.Current.Position.y + 2.0f;
+            return playerSpriteCache.bounds.max.y;
         }
     }
 }

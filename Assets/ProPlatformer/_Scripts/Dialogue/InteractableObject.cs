@@ -26,6 +26,8 @@ namespace Myd.Platform.Dialogue
         [SerializeField] private bool lockPickingMode = false;
         [Tooltip("对话播放完成后自动启动修锁小游戏")]
         [SerializeField] private bool lockPickingAfterDialogue = false;
+        [Tooltip("对话播放完成后弹出保险箱密码设置窗口")]
+        [SerializeField] private bool safePasswordAfterDialogue = false;
 
         private bool hasInteracted;
         private bool playerInRange;
@@ -185,7 +187,34 @@ namespace Myd.Platform.Dialogue
                 return;
             }
 
+            if (safePasswordAfterDialogue)
+            {
+                StartCoroutine(PlayDialogueThenSafePassword(speaker));
+                return;
+            }
+
             manager.Play(dialogue, speaker);
+        }
+
+        /// <summary>
+        /// 对话播放完成后弹出保险箱密码设置窗口
+        /// </summary>
+        private System.Collections.IEnumerator PlayDialogueThenSafePassword(DialogueSpeaker speaker)
+        {
+            manager.Play(dialogue, speaker);
+            yield return new WaitWhile(() => manager.IsPlaying);
+
+            var windowGo = new GameObject("SafePasswordWindow");
+            var window = windowGo.AddComponent<Myd.Platform.SafePasswordWindow>();
+            window.Show(
+                confirmCallback: (pwd) =>
+                {
+                    Debug.Log($"[SafePassword] 密码已设置: {pwd}（{gameObject.name}）");
+                    // 全局记录新密码：女儿庭院保险箱（保险箱 新）用此密码校验
+                    Myd.Platform.SafeController.Combination = pwd;
+                },
+                cancelCallback: (pwd) => { hasInteracted = false; } // 取消后允许再次交互
+            );
         }
 
         private IEnumerator PlayDialogueThenLockPicking(DialogueSpeaker speaker)

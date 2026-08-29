@@ -4,7 +4,7 @@ namespace Myd.Platform
 {
     /// <summary>
     /// 双角色切换控制器：Tab键/手柄左肩键切换女儿↔母亲
-    /// 切换时：换精灵帧 + 换属性 + 移动相机到对应背景 + 传送玩家
+    /// 切换时：换精灵帧 + 换属性 + 移动相机到对应背景 + 保持玩家位置（按对应点差值平移）
     /// 仅挂在有此组件的场景中才生效（scence2_3 / scence2_4）
     /// </summary>
     public class CharacterSwitchController : MonoBehaviour
@@ -15,10 +15,10 @@ namespace Myd.Platform
         [Tooltip("母亲对应的背景（庭院老）")]
         [SerializeField] private Transform backgroundB;
 
-        [Header("出生点")]
-        [Tooltip("女儿场景出生点")]
+        [Header("两庭院对应点")]
+        [Tooltip("女儿庭院中的一点")]
         [SerializeField] private Vector2 spawnA = new Vector2(0f, -2f);
-        [Tooltip("母亲场景出生点")]
+        [Tooltip("母亲庭院中与 spawnA 相对应的一点（两点差值=切换时的平移量，保持人物原位置）")]
         [SerializeField] private Vector2 spawnB = new Vector2(0f, -35f);
 
         [Header("切换设置")]
@@ -48,6 +48,10 @@ namespace Myd.Platform
             int currentChar = playerRenderer.ActiveCharacter;
             int newChar = currentChar == 0 ? 1 : 0;
 
+            // 0. 立即结束正在显示的对话：气泡/打字音效不随视角切换残留
+            var dm = FindObjectOfType<Dialogue.DialogueManager>();
+            if (dm != null && dm.IsPlaying) dm.StopDialogue();
+
             // 1. 切换角色精灵
             playerRenderer.SwitchCharacter(newChar);
 
@@ -67,17 +71,20 @@ namespace Myd.Platform
                 level.lockTarget = newChar == 0 ? backgroundA : backgroundB;
             }
 
-            // 4. 传送玩家到对应出生点
-            Vector2 spawn = newChar == 0 ? spawnA : spawnB;
+            // 4. 保持玩家原位置：按两个对应点的差值平移（庭院布局相同、整体错开，屏幕上人物原地不动）
+            if (Player.Current == null) return;
             var ctrlField = typeof(Player).GetField("playerController",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (ctrlField != null)
             {
                 var ctrl = ctrlField.GetValue(Player.Current) as PlayerController;
-                ctrl?.Respawn(spawn);
+                if (ctrl != null)
+                {
+                    Vector2 delta = newChar == 0 ? (spawnA - spawnB) : (spawnB - spawnA);
+                    ctrl.Respawn(ctrl.Position + delta);
+                    Debug.Log($"[CharacterSwitch] Switched to {(newChar == 0 ? "女儿" : "母亲")} at {ctrl.Position} (position kept, delta={delta})");
+                }
             }
-
-            Debug.Log($"[CharacterSwitch] Switched to {(newChar == 0 ? "女儿" : "母亲")} at {spawn}");
         }
 
         private void OnDrawGizmosSelected()
@@ -96,9 +103,9 @@ namespace Myd.Platform
 
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(spawnA, 0.5f);
-            UnityEditor.Handles.Label((Vector3)(Vector2)spawnA + Vector3.up * 1.5f, "女儿出生点");
+            UnityEditor.Handles.Label((Vector3)(Vector2)spawnA + Vector3.up * 1.5f, "女儿对应点");
             Gizmos.DrawWireSphere(spawnB, 0.5f);
-            UnityEditor.Handles.Label((Vector3)(Vector2)spawnB + Vector3.up * 1.5f, "母亲出生点");
+            UnityEditor.Handles.Label((Vector3)(Vector2)spawnB + Vector3.up * 1.5f, "母亲对应点");
         }
     }
 }

@@ -164,6 +164,10 @@ namespace Myd.Platform
                 yield break;
             }
 
+            // 切场景前立即结束正在显示的对话：气泡/打字音效不再跨场景残留
+            var dm = FindObjectOfType<Myd.Platform.Dialogue.DialogueManager>();
+            if (dm != null) dm.StopDialogue();
+
             // ===== 阶段1：黑屏淡入 =====
             Canvas canvas = CreateFadeCanvas();
             GameObject fadeGo = null;

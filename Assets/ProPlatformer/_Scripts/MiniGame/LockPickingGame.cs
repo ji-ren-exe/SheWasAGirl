@@ -49,6 +49,8 @@ namespace Myd.Platform
             this.onCancel = onCancel;
 
             // 暂停游戏逻辑（角色不再移动），UI 仍用 unscaledDeltaTime 运行
+            // Game.UpdateTime 会把 timeScale 拉回 1，必须用 UIBusy 标志真正冻结角色
+            Game.UIBusy = true;
             Time.timeScale = 0f;
 
             // 创建独立 AudioSource 播放音效
@@ -141,6 +143,7 @@ namespace Myd.Platform
             StartCoroutine(DelayedCallback(1.5f, () =>
             {
                 // 恢复游戏
+                Game.UIBusy = false;
                 Time.timeScale = 1f;
                 // 自动切换角色
                 var csc = FindObjectOfType<CharacterSwitchController>();
@@ -154,6 +157,7 @@ namespace Myd.Platform
         {
             isPlaying = false;
             isDone = true;
+            Game.UIBusy = false;
             Time.timeScale = 1f;
             Debug.Log("[LockPickingGame] Cancelled");
             onCancel?.Invoke();

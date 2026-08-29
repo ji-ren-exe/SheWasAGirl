@@ -23,6 +23,10 @@ namespace Myd.Platform
         [Tooltip("镜头锁定目标：取其 SpriteRenderer 世界包围盒中心")]
         public Transform lockTarget;
 
+        [Header("角色缩放（仅本场景生效）")]
+        [Tooltip("角色视觉缩放倍率，1=原始大小（碰撞盒不变，仅放大显示）")]
+        public float playerScale = 1f;
+
         /// <summary>
         /// 实时 Bounds：每次读取现算（出生点~所有场景切换点+半屏余量），关卡重排立即生效
         /// </summary>

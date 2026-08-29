@@ -68,9 +68,30 @@ namespace Myd.Platform
         #region 冻帧
         private float freezeTime;
 
+        /// <summary>
+        /// UI 弹窗占用中（密码窗/小游戏等）：冻结角色更新与时间流动，直到弹窗关闭
+        /// 注意 UpdateTime 会把 timeScale 拉回 1，单纯设 timeScale=0 无效，必须用此标志
+        /// </summary>
+        public static bool UIBusy { get; set; }
+
+        /// <summary>
+        /// 剧情演出中（密码正确后的对话序列）：跳过角色更新，但时间正常流动——
+        /// 对话气泡/协程用 scaled time，若用 UIBusy 冻结时间会导致气泡永不结束、剧情卡死
+        /// </summary>
+        public static bool SceneBusy { get; set; }
+
         //更新顿帧数据，如果不顿帧，返回true
         public bool UpdateTime(float deltaTime)
         {
+            if (UIBusy)
+            {
+                Time.timeScale = 0;
+                return false;
+            }
+            if (SceneBusy)
+            {
+                return false;   // 角色不更新，时间保持流动（对话可播）
+            }
             if (freezeTime > 0f)
             {
                 freezeTime = Mathf.Max(freezeTime - deltaTime, 0f);

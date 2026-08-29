@@ -260,19 +260,43 @@ namespace Myd.Platform
             float tempScaleY = Mathf.MoveTowards(scale.y, currSpriteScale.y, 1.75f * deltaTime);
             this.scale = new Vector2(tempScaleX, tempScaleY);
 
+            float sceneScale = GetScenePlayerScale();
+
             if (ActiveCharacter == 1)
             {
                 // 母亲：等比缩放（不拉伸）+ 在原始 localPosition 基础上叠加 Y 偏移
-                this.spriteRenderer.transform.localScale = new Vector3(scale.x * motherSpriteScale, scale.y * motherSpriteScale, 1f);
+                this.spriteRenderer.transform.localScale = new Vector3(scale.x * motherSpriteScale * sceneScale, scale.y * motherSpriteScale * sceneScale, 1f);
                 var lp = spriteRendererBaseLocalPos;
-                this.spriteRenderer.transform.localPosition = new Vector3(lp.x, lp.y + motherSpriteYOffset, lp.z);
+                float yExtra = motherSpriteYOffset;
+                // 母亲切片是中心 pivot：整体放大后脚底会下陷，需上移补偿保持贴地
+                if (sceneScale != 1f && spriteRenderer.sprite != null)
+                {
+                    float baseH = spriteRenderer.sprite.bounds.size.y * scale.y * motherSpriteScale;
+                    yExtra += (sceneScale - 1f) * baseH * 0.5f;
+                }
+                this.spriteRenderer.transform.localPosition = new Vector3(lp.x, lp.y + yExtra, lp.z);
             }
             else
             {
-                // 女儿：保持原始逻辑
-                this.spriteRenderer.transform.localScale = scale;
+                // 女儿：保持原始逻辑（切片 pivot 在底部，缩放后脚底天然对齐）
+                this.spriteRenderer.transform.localScale = new Vector3(scale.x * sceneScale, scale.y * sceneScale, 0f);
                 this.spriteRenderer.transform.localPosition = spriteRendererBaseLocalPos;
             }
+        }
+
+        // 场景级角色缩放（Level.playerScale）：缓存避免每帧 FindObjectsOfType
+        private Level sceneLevelCache;
+        private float cachedScenePlayerScale = -1f;
+
+        private float GetScenePlayerScale()
+        {
+            if (cachedScenePlayerScale < 0f)
+            {
+                sceneLevelCache = FindObjectOfType<Level>();
+                cachedScenePlayerScale = sceneLevelCache != null ? sceneLevelCache.playerScale : 1f;
+                if (cachedScenePlayerScale <= 0f) cachedScenePlayerScale = 1f;
+            }
+            return cachedScenePlayerScale;
         }
 
         private Vector3 spriteRendererBaseLocalPos;
