@@ -48,9 +48,12 @@ namespace Myd.Platform
             }
 
             float percent = player.StaminaPercent;
-            //放在角色背后上方：朝右时偏左，朝左时偏右
+            // 独立 Transform（非角色子物体）：直接用世界坐标跟随，避免父级翻转/零缩放影响
+            // 朝右时环偏左（背向），朝左时偏右
             float backDir = -(int)player.Facing;
             transform.position = player.Position + new Vector2(backDir * backOffset, upOffset);
+            // 中和任何继承缩放，保持环原始大小
+            transform.localScale = Vector3.one;
 
             // 耐力满时不显示，避免遮挡角色
             if (percent >= 0.999f)

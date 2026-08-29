@@ -20,8 +20,12 @@ namespace Myd.Platform.Quest
 
         private void Update()
         {
-            if (quest == null || QuestUI.Instance == null) return;
+            if (quest == null) return;
             if (triggerOnce && hasTriggered) return;
+
+            // QuestUI 由角色加载时自动创建，可能晚于本帧——为 null 时不判定但也不标记，等待就绪后重试
+            // （修复：玩家出生即在范围内时，首帧 Instance 未就绪导致任务永不显示）
+            if (QuestUI.Instance == null) return;
 
             var player = Player.Current;
             if (player == null) return;

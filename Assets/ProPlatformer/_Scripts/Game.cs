@@ -43,8 +43,8 @@ namespace Myd.Platform
         {
             yield return null;
 
-            //加载玩家
-            player.Reload(level.Bounds, level.StartPosition);
+            //加载玩家（Bounds 用实时计算版，随关卡摆动自动适配）
+            player.Reload(level.RuntimeBounds, level.StartPosition);
             this.gameState = EGameState.Play;
             yield return null;
         }

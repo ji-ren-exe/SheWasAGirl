@@ -68,6 +68,21 @@ namespace Myd.Platform
 
         public bool IsAttachedToRope => attachedToRope;
 
+        /// <summary>
+        /// 死亡复活：传送到复活点，重置速度/状态/资源
+        /// </summary>
+        public void Respawn(Vector2 position)
+        {
+            attachedToRope = false;
+            this.Speed = Vector2.zero;
+            this.Position = position;
+            this.stateMachine.State = (int)EActionState.Normal;
+            this.dashes = Constants.MaxDashes;
+            this.airJumps = 0;
+            RefillStamina();
+            this.cameraPosition = CameraTarget;
+        }
+
         public void AttachToRope(Vector2 position, float climbSpeed)
         {
             attachedToRope = true;
@@ -148,7 +163,7 @@ namespace Myd.Platform
 
             this.SpriteControl.SetSpriteScale(NORMAL_SPRITE_SCALE);
 
-            this.bounds = bounds;
+            // bounds 已由 Scene 分部实时计算（LevelBoundsUtility），此处只存初始相机位置
             this.cameraPosition = CameraTarget;
             //TODO 初始化尾巴颜色
             //Color color = NormalHairColor;

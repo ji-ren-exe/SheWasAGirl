@@ -3,24 +3,31 @@ using UnityEngine;
 namespace Myd.Platform.Quest
 {
     /// <summary>
-    /// 任务UI：屏幕左上角像素风任务面板
-    /// 显示当前任务标题和描述
+    /// 任务UI：黑板样式任务面板（木框黑板 + 粉笔字）
+    /// 标题粉笔白，下方粉笔手绘下划线，描述浅粉笔色
     /// </summary>
     public class QuestUI : MonoBehaviour
     {
         public static QuestUI Instance { get; private set; }
 
         [Header("UI样式")]
-        [SerializeField] private float panelWidth = 300f;
+        [SerializeField] private float panelWidth = 320f;
+        [SerializeField] private float panelHeight = 150f;
         [SerializeField] private float marginX = 24f;
         [SerializeField] private float marginY = 24f;
-        [SerializeField] private int titleFontSize = 17;
+        [SerializeField] private int titleFontSize = 18;
         [SerializeField] private int descFontSize = 13;
+
+        [Header("黑板贴图")]
+        [SerializeField] private Sprite blackboardSprite;
+        [SerializeField] private Sprite chalkLineSprite;
 
         [Header("切换动画")]
         [SerializeField] private float fadeTime = 0.4f;
 
         private RectTransform panelRoot;
+        private UnityEngine.UI.Image boardImage;
+        private UnityEngine.UI.Image chalkLineImage;
         private UnityEngine.UI.Text titleLabel;
         private UnityEngine.UI.Text descLabel;
         private CanvasGroup canvasGroup;
@@ -35,6 +42,12 @@ namespace Myd.Platform.Quest
 
         private void BuildUI()
         {
+            // 贴图兜底：动态创建时序列化字段为空，自动加载
+            if (blackboardSprite == null)
+                blackboardSprite = Resources.Load<Sprite>("Blackboard");
+            if (chalkLineSprite == null)
+                chalkLineSprite = Resources.Load<Sprite>("ChalkLine");
+
             // Canvas（Screen Space Overlay）
             var canvas = gameObject.GetComponent<Canvas>();
             if (canvas == null)
@@ -45,50 +58,82 @@ namespace Myd.Platform.Quest
                 gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
             }
 
-            // 面板根节点：锚定左上角
+            // 黑板根节点：锚定左上角，固定尺寸（贴图原生比例 320x150）
             panelRoot = new GameObject("QuestPanel").AddComponent<RectTransform>();
             panelRoot.SetParent(canvas.transform, false);
             panelRoot.anchorMin = new Vector2(0, 1);
             panelRoot.anchorMax = new Vector2(0, 1);
             panelRoot.pivot = new Vector2(0, 1);
             panelRoot.anchoredPosition = new Vector2(marginX, -marginY);
-            panelRoot.sizeDelta = new Vector2(panelWidth, 0f); // 高度由文字自然撑开
+            panelRoot.sizeDelta = new Vector2(panelWidth, panelHeight);
 
             canvasGroup = panelRoot.gameObject.AddComponent<CanvasGroup>();
             canvasGroup.alpha = 0f; // 初始隐藏，有任务后显示
 
-            // 无底板：只有文字，清新简约
+            // 黑板底图（Image 拉伸填充，保持原生像素）
+            var boardGo = new GameObject("Board");
+            var boardRect = boardGo.AddComponent<RectTransform>();
+            boardRect.SetParent(panelRoot, false);
+            boardRect.anchorMin = Vector2.zero;
+            boardRect.anchorMax = Vector2.one;
+            boardRect.offsetMin = Vector2.zero;
+            boardRect.offsetMax = Vector2.zero;
+            boardImage = boardGo.AddComponent<UnityEngine.UI.Image>();
+            boardImage.sprite = blackboardSprite;
+            boardImage.type = UnityEngine.UI.Image.Type.Simple;
+            boardImage.preserveAspect = false;
+            boardImage.raycastTarget = false;
 
-            // 标题（暖白，小字号）
+            // 标题（粉笔白，居中，自动缩字号适应宽度）
             var titleGo = new GameObject("Title");
             var titleRect = titleGo.AddComponent<RectTransform>();
             titleRect.SetParent(panelRoot, false);
             titleRect.anchorMin = new Vector2(0, 1);
             titleRect.anchorMax = new Vector2(1, 1);
             titleRect.pivot = new Vector2(0.5f, 1);
-            titleRect.anchoredPosition = new Vector2(0, 0f);
-            titleRect.sizeDelta = new Vector2(0, titleFontSize + 8f);
+            titleRect.anchoredPosition = new Vector2(0, -16f);
+            titleRect.sizeDelta = new Vector2(-32f, titleFontSize + 8f);
             titleLabel = titleGo.AddComponent<UnityEngine.UI.Text>();
             titleLabel.fontSize = titleFontSize;
-            titleLabel.color = new Color(0.95f, 0.95f, 0.9f, 0.95f); // 暖白
-            titleLabel.alignment = TextAnchor.UpperLeft;
+            titleLabel.resizeTextForBestFit = true;      // 自适应：字号在范围内自动缩小
+            titleLabel.resizeTextMinSize = 10;
+            titleLabel.resizeTextMaxSize = titleFontSize;
+            titleLabel.color = new Color(0.97f, 0.96f, 0.92f, 1f); // 粉笔白
+            titleLabel.alignment = TextAnchor.UpperCenter;          // 居中
             titleLabel.raycastTarget = false;
-            titleLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+            titleLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
             titleLabel.verticalOverflow = VerticalWrapMode.Overflow;
 
-            // 描述（浅灰，更小字号）
+            // 粉笔下划线（标题下方，手绘风，居中）
+            var lineGo = new GameObject("ChalkLine");
+            var lineRect = lineGo.AddComponent<RectTransform>();
+            lineRect.SetParent(panelRoot, false);
+            lineRect.anchorMin = new Vector2(0.5f, 1);
+            lineRect.anchorMax = new Vector2(0.5f, 1);
+            lineRect.pivot = new Vector2(0.5f, 1);
+            lineRect.anchoredPosition = new Vector2(0, -(titleFontSize + 24f));
+            lineRect.sizeDelta = new Vector2(200f, 6f);
+            chalkLineImage = lineGo.AddComponent<UnityEngine.UI.Image>();
+            chalkLineImage.sprite = chalkLineSprite;
+            chalkLineImage.preserveAspect = true;
+            chalkLineImage.raycastTarget = false;
+
+            // 描述（浅粉笔色，居中，自适应字号）
             var descGo = new GameObject("Description");
             var descRect = descGo.AddComponent<RectTransform>();
             descRect.SetParent(panelRoot, false);
             descRect.anchorMin = new Vector2(0, 1);
             descRect.anchorMax = new Vector2(1, 1);
             descRect.pivot = new Vector2(0.5f, 1);
-            descRect.anchoredPosition = new Vector2(0, -(titleFontSize + 12f));
-            descRect.sizeDelta = new Vector2(0, descFontSize * 3f);
+            descRect.anchoredPosition = new Vector2(0, -(titleFontSize + 36f));
+            descRect.sizeDelta = new Vector2(-32f, descFontSize * 3f + 8f);
             descLabel = descGo.AddComponent<UnityEngine.UI.Text>();
             descLabel.fontSize = descFontSize;
-            descLabel.color = new Color(0.8f, 0.82f, 0.85f, 0.85f); // 浅灰
-            descLabel.alignment = TextAnchor.UpperLeft;
+            descLabel.resizeTextForBestFit = true;       // 自适应
+            descLabel.resizeTextMinSize = 9;
+            descLabel.resizeTextMaxSize = descFontSize;
+            descLabel.color = new Color(0.88f, 0.9f, 0.85f, 0.92f); // 浅粉笔色
+            descLabel.alignment = TextAnchor.UpperCenter;           // 居中
             descLabel.raycastTarget = false;
             descLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
             descLabel.verticalOverflow = VerticalWrapMode.Overflow;

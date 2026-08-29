@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Myd.Platform.Dialogue
 {
     /// <summary>
-    /// 可交互物品：玩家靠近后按 E 键（手柄X键）交互，触发对话
+    /// 可交互物品：玩家靠近后按 X 键（手柄X键）交互，触发对话
     /// 挂在场景中的物品对象上（如收音机、路牌、NPC）
     /// 靠近时物体旁显示"按 E 交互"提示
     /// </summary>
@@ -20,7 +20,7 @@ namespace Myd.Platform.Dialogue
         [Tooltip("本物体自身作为说话者（气泡默认跟随本物体，需要同时挂 DialogueSpeaker 组件并编号）")]
         [SerializeField] private bool selfAsSpeaker = false;
         [Tooltip("交互提示文本")]
-        [SerializeField] private string hintText = "按 E 交互";
+        [SerializeField] private string hintText = "按 X 交互";
 
         private bool hasInteracted;
         private bool playerInRange;
@@ -87,9 +87,9 @@ namespace Myd.Platform.Dialogue
             bool showHint = playerInRange && !manager.IsPlaying;
             if (showHint) ShowHint(); else HideHint();
 
-            // 在范围内且按下交互键（E 键 / 手柄 X 键 = joystick button 2）
+            // 在范围内且按下交互键（X 键 / 手柄 X 键 = joystick button 2）
             if (playerInRange && !manager.IsPlaying &&
-                (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.JoystickButton2)))
+                (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.JoystickButton2)))
             {
                 Interact();
             }

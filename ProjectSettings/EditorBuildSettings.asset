@@ -8,4 +8,28 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.scene
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/scence1_1.scene
+    guid: 4b64402a263c6e841996268ab8517efb
+  - enabled: 1
+    path: Assets/ProPlatformer/Scenes/Main.unity
+    guid: f3bc3f4e21dc77f428b6b918e1556e0f
+  - enabled: 1
+    path: Assets/Scenes/scence1_2.scene
+    guid: 88e6f69f58a450f4faed82d38ee5b779
+  - enabled: 1
+    path: Assets/Scenes/scence1_3.scene
+    guid: db836ee10233a3045893478111df6832
+  m_BuildProfiles: []
   m_configObjects: {}
+  m_SlimFeaturesWeixinMiniGame:
+    ACLDecompression: 0
+    AllocateOverhead: 1
+    DecompressASTC: 0
+    DecompressDXT: 0
+    DecompressETC: 1
+    FreeTypeSfntPng: 1
+    JobWorker: 2
+    LightProbe: 2
+    RootMotion: 0
+    UseStringInternPool: 2

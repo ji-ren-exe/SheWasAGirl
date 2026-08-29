@@ -37,7 +37,8 @@ namespace Myd.Platform
             this.spriteRenderer.color = color;
             this.spriteRenderer.sprite = sprite;
             this.transform.position = position;
-            this.transform.localScale = scale;
+            // Z 缩放强制为 1：2D 角色 Z=0，残影继承会压扁成白色方块
+            this.transform.localScale = new Vector3(scale.x, scale.y, 1f);
             this.onRemoved = onRemoved;
         }
 

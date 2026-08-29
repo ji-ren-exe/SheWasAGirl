@@ -8,6 +8,11 @@ namespace Myd.Platform
 {
     public class NormalState : BaseActionState
     {
+        /// <summary>
+        /// 本场景禁用蹬墙跳（场景对象挂 WallJumpDisabler 组件即可关闭）
+        /// </summary>
+        public static bool DisableWallJumpThisScene;
+
         public NormalState(PlayerController controller):base(EActionState.Normal, controller)
         {
         }
@@ -185,7 +190,7 @@ namespace Myd.Platform
                     // 二段跳
                     ctx.AirJump();
                 }
-                else if (ctx.CanUnDuck)
+                else if (ctx.CanUnDuck && !DisableWallJumpThisScene)
                 {
                     //如果右侧有墙
                     if (ctx.WallJumpCheck(1))

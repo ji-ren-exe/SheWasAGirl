@@ -21,8 +21,13 @@ MonoBehaviour:
   varJumpTime: 0.18
   maxAirJumps: 1
   maxDashes: 1
-  dashSpeed: 14
-  dashTime: 0.18
+  dashSpeed: 24
+  endDashSpeed: 16
+  endDashUpMult: 0.75
+  dashTime: 0.15
+  dashCooldown: 0.2
+  dashRefillCooldown: 0.1
+  dashCornerCorrection: 4
   maxStamina: 55
   climbUpCost: 45.454544
   climbStillCost: 10

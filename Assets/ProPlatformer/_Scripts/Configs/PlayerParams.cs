@@ -132,14 +132,16 @@ namespace Myd.Platform
             Constants.JumpHBoost = JumpHBoost;
             Constants.JumpGraceTime = JumpGraceTime;
 
-            Constants.DashSpeed = DashSpeed;          //冲刺速度
-            Constants.EndDashSpeed = EndDashSpeed;        //结束冲刺速度
-            Constants.EndDashUpMult = EndDashUpMult;       //如果向上冲刺，阻力。
-            Constants.DashTime = DashTime;            //冲刺时间
-            Constants.DashCooldown = DashCooldown;         //冲刺冷却时间，
-            Constants.DashRefillCooldown = DashRefillCooldown;   //冲刺重新装填时间
-            Constants.DashCornerCorrection = DashCornerCorrection;     //水平Dash时，遇到阻挡物的可纠正像素值
-            Constants.MaxDashes = MaxDashes;    // 最大Dash次数
+            // 冲刺参数由 CharacterStats（角色属性）统一管理，此处跳过避免覆盖
+            // 角色属性在 Player.Reload 中先于本方法应用（DaughterStats.asset → Constants）
+            //Constants.DashSpeed = DashSpeed;
+            //Constants.EndDashSpeed = EndDashSpeed;
+            //Constants.EndDashUpMult = EndDashUpMult;
+            //Constants.DashTime = DashTime;
+            //Constants.DashCooldown = DashCooldown;
+            //Constants.DashRefillCooldown = DashRefillCooldown;
+            //Constants.DashCornerCorrection = DashCornerCorrection;
+            Constants.MaxDashes = MaxDashes;    // 最大Dash次数（保留：与 CharacterStats.maxDashes 同值）
 
             Constants.ClimbCheckDist = ClimbCheckDist;           //攀爬检查像素值
             Constants.ClimbUpCheckDist = ClimbUpCheckDist;         //向上攀爬检查像素值

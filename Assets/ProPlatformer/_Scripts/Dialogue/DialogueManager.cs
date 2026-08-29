@@ -49,6 +49,18 @@ namespace Myd.Platform.Dialogue
                 audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 0f;
+
+            // 动态创建（自动补建）时序列化字段为空，从 Resources 兜底加载打字音效
+            if (bubbleSound == null)
+            {
+                bubbleSound = Resources.Load<AudioClip>("TypeSound");
+                if (bubbleSound == null)
+                {
+                    // Resources 根目录没有则尝试常用路径
+                    bubbleSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                        "Assets/ProPlatformer/_Arts/Audio/TypeSound.mp3");
+                }
+            }
             BuildUI();
         }
 

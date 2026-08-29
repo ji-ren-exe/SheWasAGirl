@@ -24,15 +24,21 @@ namespace Myd.Platform
     public struct VisualButton
     {
         private KeyCode key;
+        private KeyCode gamepadKey;   // 手柄按键（KeyCode.JoystickButtonN），None=无手柄映射
         private float bufferTime;
         private bool consumed;
         private float bufferCounter;
-        public VisualButton(KeyCode key) : this(key, 0) {
+        public VisualButton(KeyCode key) : this(key, KeyCode.None, 0) {
         }
 
-        public VisualButton(KeyCode key, float bufferTime)
+        public VisualButton(KeyCode key, float bufferTime) : this(key, KeyCode.None, bufferTime)
+        {
+        }
+
+        public VisualButton(KeyCode key, KeyCode gamepadKey, float bufferTime)
         {
             this.key = key;
+            this.gamepadKey = gamepadKey;
             this.bufferTime = bufferTime;
             this.consumed = false;
             this.bufferCounter = 0f;
@@ -44,12 +50,16 @@ namespace Myd.Platform
 
         public bool Pressed()
         {
-            return UnityEngine.Input.GetKeyDown(key)||(!this.consumed && (this.bufferCounter > 0f));
+            bool keyboard = UnityEngine.Input.GetKeyDown(key);
+            bool gamepad = gamepadKey != KeyCode.None && UnityEngine.Input.GetKeyDown(gamepadKey);
+            return keyboard || gamepad || (!this.consumed && (this.bufferCounter > 0f));
         }
 
         public bool Checked()
         {
-            return UnityEngine.Input.GetKey(key);
+            bool keyboard = UnityEngine.Input.GetKey(key);
+            bool gamepad = gamepadKey != KeyCode.None && UnityEngine.Input.GetKey(gamepadKey);
+            return keyboard || gamepad;
         }
 
         public void Update(float deltaTime)
@@ -57,13 +67,19 @@ namespace Myd.Platform
             this.consumed = false;
             this.bufferCounter -= deltaTime;
             bool flag = false;
-            if (UnityEngine.Input.GetKeyDown(key))
+            if (UnityEngine.Input.GetKeyDown(key) || UnityEngine.Input.GetKey(key))
+            {
+                flag = true;
+                GameInput.ReportKeyboardInput();
+            }
+            else if (gamepadKey != KeyCode.None && (UnityEngine.Input.GetKeyDown(gamepadKey) || UnityEngine.Input.GetKey(gamepadKey)))
+            {
+                flag = true;
+                GameInput.ReportGamepadInput();
+            }
+            if (UnityEngine.Input.GetKeyDown(key) || (gamepadKey != KeyCode.None && UnityEngine.Input.GetKeyDown(gamepadKey)))
             {
                 this.bufferCounter = this.bufferTime;
-                flag = true;
-            }
-            else if (UnityEngine.Input.GetKey(key))
-            {
                 flag = true;
             }
             if (!flag)
@@ -75,11 +91,41 @@ namespace Myd.Platform
     }
     public static class GameInput
     {
-        public static VisualButton Jump = new VisualButton(KeyCode.Space, 0.08f);
-        public static VisualButton Dash = new VisualButton(KeyCode.K, 0.08f);
-        public static VisualButton Grab = new VisualButton(KeyCode.J);
+        // Jump: 键盘空格 / 手柄 A键(JoystickButton0)
+        public static VisualButton Jump = new VisualButton(KeyCode.Space, KeyCode.JoystickButton0, 0.08f);
+        // Dash: 键盘K / 手柄 右肩键RB(JoystickButton5)
+        public static VisualButton Dash = new VisualButton(KeyCode.K, KeyCode.JoystickButton5, 0.08f);
         public static VirtualJoystick Aim = new VirtualJoystick();
         public static Vector2 LastAim;
+
+        // ---- 输入设备检测 ----
+        /// <summary>最近一次输入是否来自手柄（用于教学提示切换文案）</summary>
+        public static bool UsingGamepad { get; private set; }
+        private static float lastKeyboardTime = -999f;
+        private static float lastGamepadTime = -999f;
+
+        /// <summary>是否检测到已连接的手柄</summary>
+        public static bool IsGamepadConnected
+        {
+            get
+            {
+                foreach (var name in UnityEngine.Input.GetJoystickNames())
+                    if (!string.IsNullOrEmpty(name)) return true;
+                return false;
+            }
+        }
+
+        internal static void ReportKeyboardInput()
+        {
+            lastKeyboardTime = Time.unscaledTime;
+            UsingGamepad = lastGamepadTime > lastKeyboardTime;
+        }
+
+        internal static void ReportGamepadInput()
+        {
+            lastGamepadTime = Time.unscaledTime;
+            UsingGamepad = lastGamepadTime > lastKeyboardTime;
+        }
 
         //根据当前朝向,决定移动方向.
         public static Vector2 GetAimVector(Facings defaultFacing = Facings.Right)
@@ -103,6 +149,22 @@ namespace Myd.Platform
         {
             Jump.Update(deltaTime);
             Dash.Update(deltaTime);
+
+            // 摇杆/键盘移动输入的设备来源检测
+            float h = UnityEngine.Input.GetAxisRaw("Horizontal");
+            float v = UnityEngine.Input.GetAxisRaw("Vertical");
+            if (Mathf.Abs(h) > 0.3f || Mathf.Abs(v) > 0.3f)
+            {
+                // 摇杆倾斜（含模拟量）视为手柄；键盘方向键/WASD 走按键路径
+                if (Mathf.Abs(UnityEngine.Input.GetAxisRaw("Mouse X")) < 0.01f)
+                {
+                    // 有键按住（键盘）则报键盘，否则视为摇杆
+                    bool anyKey = UnityEngine.Input.anyKey;
+                    bool stickTilted = Mathf.Abs(h) > 0.5f || Mathf.Abs(v) > 0.5f;
+                    if (anyKey) ReportKeyboardInput();
+                    else if (stickTilted) ReportGamepadInput();
+                }
+            }
         }
     }
 

@@ -119,10 +119,10 @@ TextureImporter:
       name: DaughterRun_00
       rect:
         serializedVersion: 2
-        x: 0
+        x: 3
         y: 0
-        width: 49
-        height: 70
+        width: 44
+        height: 69
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -235,8 +235,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 423037e53f308e930800000000000000
-      internalID: 4172589398555296548
+      spriteID: 5230aa05000000000800000000000000
+      internalID: 5230111100000005
       vertices: []
       indices: 
       edges: []
@@ -256,8 +256,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 423037e53f308e930800000000000000
-      internalID: 4172589398555296548
+      spriteID: 6230aa06000000000800000000000000
+      internalID: 6230111100000006
       vertices: []
       indices: 
       edges: []
@@ -277,8 +277,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 423037e53f308e930800000000000000
-      internalID: 4172589398555296548
+      spriteID: 7230aa07000000000800000000000000
+      internalID: 7230111100000007
       vertices: []
       indices: 
       edges: []

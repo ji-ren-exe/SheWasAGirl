@@ -23,8 +23,20 @@ namespace Myd.Platform
 
         [Header("冲刺")]
         public int maxDashes = 1;
-        public float dashSpeed = 14f;
-        public float dashTime = 0.18f;
+        [Tooltip("开始冲刺初速度")]
+        public float dashSpeed = 24f;
+        [Tooltip("结束冲刺后速度")]
+        public float endDashSpeed = 16f;
+        [Tooltip("Y轴向上冲刺的衰减系数")]
+        public float endDashUpMult = 0.75f;
+        [Tooltip("冲刺时间")]
+        public float dashTime = 0.15f;
+        [Tooltip("冲刺冷却时间")]
+        public float dashCooldown = 0.2f;
+        [Tooltip("冲刺重新装填时间")]
+        public float dashRefillCooldown = 0.1f;
+        [Tooltip("Dash水平或竖直方向位置校正的像素值")]
+        public int dashCornerCorrection = 4;
 
         [Header("攀爬耐力")]
         public float maxStamina = 55f;
@@ -57,7 +69,12 @@ namespace Myd.Platform
             Constants.MaxDashes = maxDashes;
             Constants.MaxAirJumps = maxAirJumps;
             Constants.DashSpeed = dashSpeed;
+            Constants.EndDashSpeed = endDashSpeed;
+            Constants.EndDashUpMult = endDashUpMult;
             Constants.DashTime = dashTime;
+            Constants.DashCooldown = dashCooldown;
+            Constants.DashRefillCooldown = dashRefillCooldown;
+            Constants.DashCornerCorrection = dashCornerCorrection;
 
             Constants.ClimbMaxStamina = maxStamina;
             Constants.ClimbUpCost = climbUpCost;

@@ -47,7 +47,7 @@ namespace Myd.Platform.Dialogue
 
                 case TriggerMode.KeyInRange:
                     if (PlayerInRange() && !DialogueManager.Instance.IsPlaying &&
-                        (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.JoystickButton2)))
+                        (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.JoystickButton2)))
                         Trigger();
                     break;
             }

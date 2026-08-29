@@ -70,6 +70,8 @@ namespace Myd.Platform
         [SerializeField] private AudioClip heavyLandClip;
         [SerializeField] private float footstepInterval = 0.3f;
         private AudioSource audioSource;
+        // 一次性音效专用源：与脚步声循环源分离，避免被 Pause 阻塞/延迟补播
+        private AudioSource oneShotAudioSource;
         private float footstepTimer;
         // 记录起跳时的高度，用于判断是否为高落差落地
         private float jumpStartY;
@@ -82,6 +84,10 @@ namespace Myd.Platform
                 audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 0f;
+
+            oneShotAudioSource = gameObject.AddComponent<AudioSource>();
+            oneShotAudioSource.playOnAwake = false;
+            oneShotAudioSource.spatialBlend = 0f;
         }
 
         public Vector3 SpritePosition { get => this.spriteRenderer.transform.position; }
@@ -90,6 +96,77 @@ namespace Myd.Platform
         {
             LoadFrames();
             DisableOriginalHair();
+            AttachStaminaRing();
+            EnsureGlobalUI();
+            SyncSceneCameraFromMain();
+        }
+
+        /// <summary>
+        /// 场景相机设置与 Main 场景对齐：抖动强度、cullingMask 等角色相关相机参数统一默认值
+        /// 新建任何场景都自动使用 Main 调好的手感，无需手动配置
+        /// </summary>
+        private void SyncSceneCameraFromMain()
+        {
+            var cam = FindObjectOfType<SceneCamera>();
+            if (cam == null) return;
+
+            var shakeField = typeof(SceneCamera).GetField("ShakeStrength",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (shakeField != null)
+            {
+                float mainShake = 0.125f; // Main 场景调好的值
+                shakeField.SetValue(cam, mainShake);
+            }
+
+            // 主相机 cullingMask 对齐 Main（119）：剔除 Post 层(26)
+            // 否则 Ripple 波纹 quad 会被主相机渲染成白色方块（冲刺结束瞬间）
+            var mainCam = cam.GetComponent<Camera>();
+            if (mainCam != null && mainCam.cullingMask == -1)
+            {
+                mainCam.cullingMask = 119;
+            }
+        }
+
+        /// <summary>
+        /// 耐力环绑定到角色：由 PlayerRenderer 创建并持有（销毁时一并清理），
+        /// 但使用独立 Transform——挂在角色子物体下会被父级的翻转缩放(X=-1)和Z=0压扁导致环不可见
+        /// </summary>
+        private void AttachStaminaRing()
+        {
+            if (staminaRing != null) return;
+
+            var ringGo = new GameObject("StaminaRing");
+            staminaRing = ringGo.AddComponent<StaminaRingUI>();
+        }
+
+        // 耐力环引用：生命周期跟随角色（角色销毁时一同销毁）
+        private StaminaRingUI staminaRing;
+
+        private void OnDestroy()
+        {
+            if (staminaRing != null)
+                Destroy(staminaRing.gameObject);
+        }
+
+        /// <summary>
+        /// 自动创建场景级全局UI：对话播放器（DialogueManager）、任务面板（QuestUI）
+        /// 每个场景无需手动放置，角色加载时自动补齐
+        /// </summary>
+        private void EnsureGlobalUI()
+        {
+            // 对话播放器
+            if (FindObjectOfType<Dialogue.DialogueManager>() == null)
+            {
+                var dmGo = new GameObject("DialogueManager");
+                dmGo.AddComponent<Dialogue.DialogueManager>();
+            }
+
+            // 任务面板
+            if (Quest.QuestUI.Instance == null && FindObjectOfType<Quest.QuestUI>() == null)
+            {
+                var qGo = new GameObject("QuestUI");
+                qGo.AddComponent<Quest.QuestUI>();
+            }
         }
 
         /// <summary>
@@ -149,13 +226,22 @@ namespace Myd.Platform
             // 使用 PlayerController 的状态信息
             bool onGround = IsOnGround();
             bool moving = Mathf.Abs(UnityEngine.Input.GetAxisRaw("Horizontal")) > 0.1f;
+            // 冲刺中：使用跑步动画（冲刺状态优先于空中判定）
+            bool dashing = IsDashing();
 
-            if (!onGround)
-                newAnim = AnimState.Jump;
+            if (dashing)
+                newAnim = AnimState.Run;
+            else if (!onGround)
+            {
+                // 滞空动画：全部使用奔跑精灵图（空中奔跑感，起跳瞬间也不例外）
+                newAnim = AnimState.Run;
+            }
             else if (moving)
                 newAnim = AnimState.Run;
             else
                 newAnim = AnimState.Idle;
+
+            wasOnGroundLastFrame = onGround;
 
             if (newAnim != currentAnim)
             {
@@ -221,10 +307,13 @@ namespace Myd.Platform
                 footstepTimer = 0;
             }
 
-            // 跳跃音效：状态切到 Jump 时播放
+            // 跳跃音效：离地且向上运动（真正起跳）时才播放，走出平台坠落不播
             if (currentAnim == AnimState.Jump && !wasInAir)
             {
-                PlayClip(jumpClip, 0.8f);
+                if (GetVerticalSpeed() > 0.1f)
+                {
+                    PlayClip(jumpClip, 0.8f);
+                }
                 jumpStartY = transform.position.y;
             }
 
@@ -244,23 +333,62 @@ namespace Myd.Platform
 
         private void PlayClip(AudioClip clip, float volume)
         {
-            if (clip != null && audioSource != null)
+            if (clip != null && oneShotAudioSource != null)
             {
-                audioSource.PlayOneShot(clip, volume);
+                oneShotAudioSource.PlayOneShot(clip, volume);
             }
             else
             {
-                Debug.LogWarning($"[AUDIO] PlayClip failed: clip={clip}, audioSource={audioSource}");
+                Debug.LogWarning($"[AUDIO] PlayClip failed: clip={clip}, oneShotAudioSource={oneShotAudioSource}");
             }
         }
 
         private bool IsOnGround()
         {
+            var ctrl = GetController();
+            return ctrl != null ? ctrl.OnGround : true;
+        }
+
+        /// <summary>
+        /// 玩家是否处于冲刺状态（状态机 State == Dash）
+        /// </summary>
+        private bool IsDashing()
+        {
+            var ctrl = GetController();
+            if (ctrl == null) return false;
+
+            var smField = typeof(PlayerController).GetField("stateMachine",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (smField == null) return false;
+            var sm = smField.GetValue(ctrl);
+            if (sm == null) return false;
+
+            var stateProp = sm.GetType().GetProperty("State");
+            if (stateProp == null) return false;
+            return stateProp.GetValue(sm) is EActionState es && es == EActionState.Dash;
+        }
+
+        private float GetVerticalSpeed()
+        {
+            var ctrl = GetController();
+            return ctrl != null ? ctrl.Speed.y : 0f;
+        }
+
+        private float GetHorizontalSpeed()
+        {
+            var ctrl = GetController();
+            return ctrl != null ? ctrl.Speed.x : 0f;
+        }
+
+        // 滞空动画判定：上一帧是否在地面（起跳瞬间检测）
+        private bool wasOnGroundLastFrame = true;
+
+        private PlayerController GetController()
+        {
             var ctrlField = typeof(Player).GetField("playerController",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (ctrlField == null) return true;
-            var ctrl = ctrlField.GetValue(Player.Current) as PlayerController;
-            return ctrl != null ? ctrl.OnGround : true;
+            if (ctrlField == null || Player.Current == null) return null;
+            return ctrlField.GetValue(Player.Current) as PlayerController;
         }
 
         public void Trail(int face)

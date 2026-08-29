@@ -10,10 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3b80b22ee2fbbba41b0ef64ab39ff9f5, type: 3}
-  m_Name: "\u5F00\u573A1"
+  m_Name: sence1-1-2
   m_EditorClassIdentifier: 
-  dialogueId: test
+  dialogueId: 
   bubbles:
   - portrait: {fileID: 0}
-    text: 11111
+    text: "\u4E3A\u4EC0\u4E48\u6211\u7684\u5929\u8D4B\u8FD9\u4E48\u597D\n\u5988\u5988\u5374\u8981\u963B\u6B62\u6211\u53BB\u5F53\u8FD0\u52A8\u5458\u5462\uFF1F"
     duration: 3
+    speakerId: 0
+  - portrait: {fileID: 0}
+    text: "\u597D\u60F3\u53BB\u722C\u5C71"
+    duration: 3
+    speakerId: 0

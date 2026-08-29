@@ -44,7 +44,9 @@ namespace Myd.Platform
         public void Add(SpriteRenderer renderer, int facing, Color color, float duration = 1f, bool frozenUpdate = false, bool useRawDeltaTime = false)
         {
             // 使用根对象的完整世界缩放（含翻转负号），避免残影方向反向
-            Vector2 scale = renderer.transform.root.lossyScale;
+            // Z 强制为 1：根物体 Z 缩放为 0（2D 压平），残影继承后会被压成异常白色方块
+            Vector3 rootScale = renderer.transform.root.lossyScale;
+            Vector2 scale = new Vector2(rootScale.x, rootScale.y);
             Add(renderer.transform.position, renderer.sprite, scale, facing, color, 2, duration, frozenUpdate, useRawDeltaTime);
         }
 

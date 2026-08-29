@@ -21,7 +21,7 @@ namespace Myd.Platform
         private Vector2 offset;
 
         [SerializeField]
-        private float ShakeStrength = 1;
+        private float ShakeStrength = 0.125f;
         [SerializeField]
         private AnimationCurve ShakeCurve = new AnimationCurve(new Keyframe[] 
             { 
