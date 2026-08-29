@@ -26,6 +26,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/scence2_2.scene
     guid: 924038e4e6ad83e488886e263cdb302f
+  - enabled: 1
+    path: Assets/Scenes/scence2_3.scene
+    guid: 14c4a0312a9cc5b48874a4ed24d97c77
   m_BuildProfiles: []
   m_configObjects: {}
   m_SlimFeaturesWeixinMiniGame:

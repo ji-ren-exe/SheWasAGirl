@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 namespace Myd.Platform.Dialogue
 {
@@ -18,6 +19,12 @@ namespace Myd.Platform.Dialogue
         [SerializeField] private Vector2 triggerSize = new Vector2(4f, 6f);
         [Tooltip("是否只触发一次")]
         [SerializeField] private bool triggerOnce = true;
+
+        [Header("对话后切换场景")]
+        [Tooltip("对话播放完成后自动触发场景切换")]
+        [SerializeField] private bool transitionAfterDialogue = false;
+        [Tooltip("目标 SceneTransition 组件（拖入场景中挂了 SceneTransition 的对象）")]
+        [SerializeField] private SceneTransition targetTransition;
 
         public enum TriggerMode
         {
@@ -62,7 +69,20 @@ namespace Myd.Platform.Dialogue
             if (DialogueManager.Instance == null) return;
 
             hasTriggered = true;
+
+            if (transitionAfterDialogue && targetTransition != null)
+                StartCoroutine(PlayAndWaitForTransition());
+            else
+                DialogueManager.Instance.Play(dialogue);
+        }
+
+        private IEnumerator PlayAndWaitForTransition()
+        {
             DialogueManager.Instance.Play(dialogue);
+            // 等待对话播放完成
+            yield return new WaitWhile(() => DialogueManager.Instance.IsPlaying);
+            // 触发场景切换
+            targetTransition.Trigger();
         }
 
         private bool PlayerInRange()

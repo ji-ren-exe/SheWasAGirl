@@ -24,6 +24,8 @@ namespace Myd.Platform
         [SerializeField] private bool requireInteraction = false;
         [Tooltip("交互提示文本（requireInteraction=true 时显示）")]
         [SerializeField] private string hintText = "按 X 交互";
+        [Tooltip("仅允许外部脚本调用 Trigger() 触发，禁用 Update 自动/按键检测")]
+        [SerializeField] private bool externalTriggerOnly = false;
 
         [Header("黑屏过渡")]
         [Tooltip("黑屏淡入时长（触发→全黑）")]
@@ -83,7 +85,7 @@ namespace Myd.Platform
 
         private void Update()
         {
-            if (triggered) return;
+            if (triggered || externalTriggerOnly) return;
             var player = Player.Current;
             if (player == null) return;
 
@@ -113,6 +115,17 @@ namespace Myd.Platform
                     StartCoroutine(TransitionRoutine());
                 }
             }
+        }
+
+        /// <summary>
+        /// 外部调用触发场景切换（如对话结束后由 DialogueTrigger 调用）
+        /// </summary>
+        public void Trigger()
+        {
+            if (triggered) return;
+            triggered = true;
+            HideHint();
+            StartCoroutine(TransitionRoutine());
         }
 
         private void ShowHint()
