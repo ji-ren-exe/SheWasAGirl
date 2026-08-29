@@ -40,7 +40,7 @@ namespace Myd.Platform
             }
         }
 
-        private void SwitchCharacter()
+        public void SwitchCharacter()
         {
             var playerRenderer = FindObjectOfType<PlayerRenderer>();
             if (playerRenderer == null) return;

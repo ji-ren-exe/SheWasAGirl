@@ -238,8 +238,7 @@ namespace Myd.Platform
         {
             motherIdleFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherIdle.png");
             motherRunFrames  = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherRun.png");
-            // 没有母亲跳跃图集，暂用站立帧兜底
-            motherJumpFrames = motherIdleFrames;
+            motherJumpFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherJump.png");
         }
 
         /// <summary>
