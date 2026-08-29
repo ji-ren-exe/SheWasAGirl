@@ -31,11 +31,16 @@ namespace Myd.Platform
         {
             get
             {
+                // 固定镜头（仅配置了 Level.lockCamera 的场景）：相机锁定在目标中心，不跟随角色
+                Level level = FindLevel();
+                if (level != null && level.lockCamera)
+                    return level.GetCameraLockCenter();
+
                 Vector2 at = new Vector2();
                 Vector2 target = new Vector2(this.Position.x, this.Position.y);
 
                 // 实时 Bounds（出生点~切换点）+ 动态半屏（拉远后钳制范围自动收缩）
-                Bounds b = LevelBoundsUtility.Compute(FindLevel());
+                Bounds b = LevelBoundsUtility.Compute(level);
                 float halfW, halfH;
                 LevelBoundsUtility.GetHalfView(out halfW, out halfH);
 

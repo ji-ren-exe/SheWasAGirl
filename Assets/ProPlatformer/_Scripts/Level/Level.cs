@@ -13,10 +13,35 @@ namespace Myd.Platform
 
         public Vector2 StartPosition;
 
+        [Header("镜头取景")]
+        [Tooltip("Bounds 左/右收缩量（世界单位）。正值收紧→角色在出生点偏左、切换点偏右")]
+        public Vector2 cameraBoundsInset = Vector2.zero;
+
+        [Header("固定镜头（仅本场景生效）")]
+        [Tooltip("勾选后相机锁定在 lockTarget 中心，不跟随角色移动")]
+        public bool lockCamera;
+        [Tooltip("镜头锁定目标：取其 SpriteRenderer 世界包围盒中心")]
+        public Transform lockTarget;
+
         /// <summary>
         /// 实时 Bounds：每次读取现算（出生点~所有场景切换点+半屏余量），关卡重排立即生效
         /// </summary>
         public Bounds RuntimeBounds => LevelBoundsUtility.Compute(this);
+
+        /// <summary>
+        /// 固定镜头中心：优先取 lockTarget 精灵包围盒中心，无渲染器取其位置，均缺省回落出生点
+        /// </summary>
+        public Vector2 GetCameraLockCenter()
+        {
+            if (lockTarget != null)
+            {
+                var renderer = lockTarget.GetComponentInChildren<SpriteRenderer>();
+                if (renderer != null)
+                    return renderer.bounds.center;
+                return (Vector2)lockTarget.position;
+            }
+            return StartPosition;
+        }
 
         public void OnDrawGizmosSelected()
         {

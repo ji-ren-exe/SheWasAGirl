@@ -2297,7 +2297,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5680777761373114871, guid: 78c2c6b3cdf7aa24aadbf9f8c91fdce4, type: 3}
       propertyPath: targetSceneName
-      value: scence1_4
+      value: scence2_1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4550,6 +4550,9 @@ MonoBehaviour:
     m_Center: {x: 22, y: 5, z: 0}
     m_Extent: {x: 58, y: 19, z: 0}
   StartPosition: {x: -11.519066, y: -0.5170336}
+  cameraBoundsInset: {x: 18.854736, y: 16.47934}
+  lockCamera: 0
+  lockTarget: {fileID: 0}
 --- !u!4 &374645084
 Transform:
   m_ObjectHideFlags: 0
@@ -16723,8 +16726,8 @@ Transform:
   m_GameObject: {fileID: 1576907737}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5, y: -13.3, z: 0}
-  m_LocalScale: {x: 3.1107574, y: 3.2680254, z: 3.1107574}
+  m_LocalPosition: {x: -8.7515, y: -10.8445, z: 0}
+  m_LocalScale: {x: 2.9007812, y: 2.9918773, z: 3.1107574}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}

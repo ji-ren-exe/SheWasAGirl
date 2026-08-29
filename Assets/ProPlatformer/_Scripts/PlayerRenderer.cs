@@ -75,7 +75,6 @@ namespace Myd.Platform
         private float footstepTimer;
         // 记录起跳时的高度，用于判断是否为高落差落地
         private float jumpStartY;
-        private bool wasInAir;
 
         private void Awake()
         {
@@ -124,6 +123,23 @@ namespace Myd.Platform
             if (mainCam != null && mainCam.cullingMask == -1)
             {
                 mainCam.cullingMask = 119;
+            }
+
+            // 固定镜头场景：按锁定目标包围盒自适应正交尺寸，恰好容纳整个背景
+            // 取「高度需求」与「宽度需求/宽高比」的较大者，窄屏自动放大保证左右不出界
+            var level = FindObjectOfType<Level>();
+            if (mainCam != null && level != null && level.lockCamera && level.lockTarget != null)
+            {
+                var lockRenderer = level.lockTarget.GetComponentInChildren<SpriteRenderer>();
+                if (lockRenderer != null)
+                {
+                    Bounds b = lockRenderer.bounds;
+                    if (b.extents.x > 0.01f && b.extents.y > 0.01f)
+                    {
+                        float aspect = Mathf.Max(mainCam.aspect, 0.01f);
+                        mainCam.orthographicSize = Mathf.Max(b.extents.y, b.extents.x / aspect);
+                    }
+                }
             }
         }
 
@@ -231,17 +247,20 @@ namespace Myd.Platform
 
             if (dashing)
                 newAnim = AnimState.Run;
+            else if (player.IsAttachedToRope)
+                newAnim = AnimState.Jump;
             else if (!onGround)
             {
-                // 滞空动画：全部使用奔跑精灵图（空中奔跑感，起跳瞬间也不例外）
-                newAnim = AnimState.Run;
+                // 滞空：有横向速度→奔跑图（空中奔跑感）；无横向速度（原地起跳）→跳跃GIF
+                if (Mathf.Abs(GetHorizontalSpeed()) > 0.5f)
+                    newAnim = AnimState.Run;
+                else
+                    newAnim = AnimState.Jump;
             }
             else if (moving)
                 newAnim = AnimState.Run;
             else
                 newAnim = AnimState.Idle;
-
-            wasOnGroundLastFrame = onGround;
 
             if (newAnim != currentAnim)
             {
@@ -307,8 +326,9 @@ namespace Myd.Platform
                 footstepTimer = 0;
             }
 
-            // 跳跃音效：离地且向上运动（真正起跳）时才播放，走出平台坠落不播
-            if (currentAnim == AnimState.Jump && !wasInAir)
+            // 跳跃音效：上一帧在地面、本帧离地且向上运动（真正起跳）才播放，走出平台坠落不播
+            // 与动画解耦：滞空动画已改用奔跑图，AnimState.Jump 不再被赋值，不能用动画状态判定
+            if (wasOnGroundLastFrame && !onGround)
             {
                 if (GetVerticalSpeed() > 0.1f)
                 {
@@ -319,7 +339,7 @@ namespace Myd.Platform
 
             // 高处落地震动音效：从空中落地且落差超过 4 个角色身高(4×2.68≈10.7)
             float heavyLandThreshold = 10.7f;
-            if (currentAnim != AnimState.Jump && wasInAir)
+            if (!wasOnGroundLastFrame && onGround)
             {
                 float fallDistance = jumpStartY - transform.position.y;
                 if (fallDistance > heavyLandThreshold)
@@ -328,7 +348,7 @@ namespace Myd.Platform
                 }
             }
 
-            wasInAir = (currentAnim == AnimState.Jump);
+            wasOnGroundLastFrame = onGround;
         }
 
         private void PlayClip(AudioClip clip, float volume)

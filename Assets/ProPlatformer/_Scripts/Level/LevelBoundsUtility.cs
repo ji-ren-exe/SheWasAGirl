@@ -50,10 +50,22 @@ namespace Myd.Platform
             GetHalfView(out halfW, out halfH);
             float pad = 2f;
 
+            float boundsW = (maxX - minX) + (halfW + pad) * 2f;
+            float boundsCX = (minX + maxX) / 2f;
+
+            // 每场景收缩（cameraBoundsInset.x=左收缩, .y=右收缩）
+            float insetL = level.cameraBoundsInset.x;
+            float insetR = level.cameraBoundsInset.y;
+            if (insetL > 0 || insetR > 0)
+            {
+                boundsW -= (insetL + insetR);
+                boundsCX += (insetL - insetR) * 0.5f;
+            }
+
             return new Bounds(
-                new Vector3((minX + maxX) / 2f, (minY + maxY) / 2f, 0f),
+                new Vector3(boundsCX, (minY + maxY) / 2f, 0f),
                 new Vector3(
-                    (maxX - minX) + (halfW + pad) * 2f,
+                    boundsW,
                     Mathf.Max((maxY - minY), 4f) + (halfH + pad) * 2f,
                     0f));
         }
