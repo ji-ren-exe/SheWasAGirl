@@ -170,8 +170,8 @@ namespace Myd.Platform
             t.alignment = TextAnchor.MiddleCenter;
             t.text = text;
             t.raycastTarget = false;
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             t.font = font;
             return t;
         }

@@ -37,6 +37,8 @@ namespace Myd.Platform.Dialogue
         private DialogueSpeaker currentSpeaker;
         // 当前对话数据（用于读取气泡位置模式）
         private DialogueData currentDialogue;
+        // 当前气泡生效的位置模式（逐条解析：气泡级 Inherit → 对话级设置）
+        private BubblePositionMode currentBubbleMode = BubblePositionMode.Default;
 
         // 已播放过的对话ID（运行时去重）
         private HashSet<string> playedIds = new HashSet<string>();
@@ -56,12 +58,14 @@ namespace Myd.Platform.Dialogue
             if (bubbleSound == null)
             {
                 bubbleSound = Resources.Load<AudioClip>("TypeSound");
+#if UNITY_EDITOR
                 if (bubbleSound == null)
                 {
-                    // Resources 根目录没有则尝试常用路径
+                    // Resources 根目录没有则尝试常用路径（仅编辑器）
                     bubbleSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
                         "Assets/ProPlatformer/_Arts/Audio/TypeSound.mp3");
                 }
+#endif
             }
             BuildUI();
         }
@@ -119,8 +123,8 @@ namespace Myd.Platform.Dialogue
             textLabel.raycastTarget = false;
 
             // 默认字体
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             textLabel.font = font;
         }
 
@@ -143,6 +147,7 @@ namespace Myd.Platform.Dialogue
             if (audioSource != null && audioSource.isPlaying) audioSource.Stop();
             currentSpeaker = null;
             currentDialogue = null;
+            currentBubbleMode = BubblePositionMode.Default;
         }
 
         /// <summary>
@@ -182,6 +187,11 @@ namespace Myd.Platform.Dialogue
 
             foreach (var bubble in data.bubbles)
             {
+                // 气泡级位置覆盖：Inherit 时沿用对话级设置
+                currentBubbleMode = bubble.positionMode == BubblePositionMode.Inherit
+                    ? data.bubblePosition
+                    : bubble.positionMode;
+
                 // 按编号解析说话者：0=玩家，1/2/3=场景 Speaker，未找到则回落到玩家
                 currentSpeaker = ResolveSpeaker(bubble.speakerId);
 
@@ -241,6 +251,7 @@ namespace Myd.Platform.Dialogue
                 audioSource.Stop();
             currentSpeaker = null;
             currentDialogue = null;
+            currentBubbleMode = BubblePositionMode.Default;
             playing = null;
         }
 
@@ -282,6 +293,13 @@ namespace Myd.Platform.Dialogue
         {
             if (bubbleRoot == null || !bubbleRoot.gameObject.activeSelf) return;
 
+            // 画面正中央（过场独白）：不跟随锚点，直接屏幕中心（不依赖角色存在）
+            if (currentBubbleMode == BubblePositionMode.ScreenCenter)
+            {
+                bubbleRoot.anchoredPosition = Vector2.zero;
+                return;
+            }
+
             // 确定气泡锚点：说话者角色（NPC）或玩家
             Vector2 anchorWorld;
             float side;
@@ -306,22 +324,16 @@ namespace Myd.Platform.Dialogue
                 return;
             }
 
-            // 根据对话数据的位置模式决定气泡偏移
-            if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.ScreenCenter)
-            {
-                // 画面正中央（过场独白）：不跟随锚点，直接屏幕中心
-                bubbleRoot.anchoredPosition = Vector2.zero;
-                return;
-            }
+            // 根据当前气泡的位置模式决定气泡偏移
             Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(Camera.main, anchorWorld);
             Vector2 localPos;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvas.transform as RectTransform, screenPos, canvas.worldCamera, out localPos);
-            if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.LeftBottom)
+            if (currentBubbleMode == BubblePositionMode.LeftBottom)
                 bubbleRoot.anchoredPosition = localPos + new Vector2(-bubbleOffsetX, -bubbleOffsetY);
-            else if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.CenterTop)
+            else if (currentBubbleMode == BubblePositionMode.CenterTop)
                 bubbleRoot.anchoredPosition = localPos + new Vector2(0f, bubbleOffsetY);   // 正上方居中，防靠边出屏
-            else if (currentDialogue != null && currentDialogue.bubblePosition == BubblePositionMode.LeftTop)
+            else if (currentBubbleMode == BubblePositionMode.LeftTop)
                 bubbleRoot.anchoredPosition = localPos + new Vector2(-bubbleOffsetX, bubbleOffsetY);   // 上方偏左（固定），靠右屏边物体用
             else
                 bubbleRoot.anchoredPosition = localPos + new Vector2(bubbleOffsetX * side, bubbleOffsetY);

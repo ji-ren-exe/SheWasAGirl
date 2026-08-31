@@ -93,19 +93,25 @@ namespace Myd.Platform
             if (backgroundA != null)
             {
                 Gizmos.DrawWireSphere(backgroundA.position, 1f);
+#if UNITY_EDITOR
                 UnityEditor.Handles.Label(backgroundA.position + Vector3.up * 2f, "女儿背景");
+#endif
             }
             if (backgroundB != null)
             {
                 Gizmos.DrawWireSphere(backgroundB.position, 1f);
+#if UNITY_EDITOR
                 UnityEditor.Handles.Label(backgroundB.position + Vector3.up * 2f, "母亲背景");
+#endif
             }
 
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(spawnA, 0.5f);
-            UnityEditor.Handles.Label((Vector3)(Vector2)spawnA + Vector3.up * 1.5f, "女儿对应点");
             Gizmos.DrawWireSphere(spawnB, 0.5f);
+#if UNITY_EDITOR
+            UnityEditor.Handles.Label((Vector3)(Vector2)spawnA + Vector3.up * 1.5f, "女儿对应点");
             UnityEditor.Handles.Label((Vector3)(Vector2)spawnB + Vector3.up * 1.5f, "母亲对应点");
+#endif
         }
     }
 }

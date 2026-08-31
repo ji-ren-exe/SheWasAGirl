@@ -32,6 +32,8 @@ namespace Myd.Platform
             {
                 collected = true;
                 Debug.Log($"Collected {medalType}");
+                // 拾取瞬间：手柄微震（Xbox/桥接手柄有效）
+                RumbleDriver.Play(0.25f, 0.12f);
                 // 先隐藏 visuals（Sprite/Collider），延迟到音效播完再失活整个对象
                 var sr = GetComponent<SpriteRenderer>();
                 if (sr != null) sr.enabled = false;

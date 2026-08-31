@@ -158,6 +158,10 @@ MonoBehaviour:
   mode: 0
   triggerSize: {x: 4, y: 6}
   triggerOnce: 1
+  showKeyHint: 1
+  hintText: "\u6309 X \u4EA4\u4E92"
+  transitionAfterDialogue: 0
+  targetTransition: {fileID: 0}
 --- !u!4 &140023042
 Transform:
   m_ObjectHideFlags: 0
@@ -1011,8 +1015,17 @@ MonoBehaviour:
     m_Extent: {x: 55, y: 14, z: 0}
   StartPosition: {x: -16.382816, y: -2.7095287}
   cameraBoundsInset: {x: 31, y: 13}
+  boundsFromSpawnAndTransitionsOnly: 0
+  disableCameraBounds: 0
+  spawnTransitionThirdScreenBounds: 0
+  mirrorSceneCamera: 0
+  mirrorAxis: {fileID: 0}
+  mirrorMinOrtho: 3.5
+  mirrorMaxOrtho: 32
   lockCamera: 0
   lockTarget: {fileID: 0}
+  playerScale: 1
+  playerCharacter: 0
 --- !u!4 &374645084
 Transform:
   m_ObjectHideFlags: 0
@@ -2089,6 +2102,10 @@ MonoBehaviour:
   mode: 2
   triggerSize: {x: 4, y: 6}
   triggerOnce: 1
+  showKeyHint: 1
+  hintText: "\u6309 X \u4EA4\u4E92"
+  transitionAfterDialogue: 0
+  targetTransition: {fileID: 0}
 --- !u!4 &1134100008
 Transform:
   m_ObjectHideFlags: 0
@@ -2733,7 +2750,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8272813792275969336, guid: 85290839963e68843a1b41567d38a7c2, type: 3}
       propertyPath: hintText
-      value: "\u671D\u5899\u8DF3\u8DC3\n\u518D\u5411\u53CD\u65B9\u5411\u8E6C\u5899"
+      value: "\u6309\u4F4F\u65B9\u5411\u952E\u548C\u4E0A\n\u5411\u4E0A\u6500\u722C"
       objectReference: {fileID: 0}
     - target: {fileID: 8272813792275969336, guid: 85290839963e68843a1b41567d38a7c2, type: 3}
       propertyPath: showDistance
@@ -2741,7 +2758,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8272813792275969336, guid: 85290839963e68843a1b41567d38a7c2, type: 3}
       propertyPath: hintTextGamepad
-      value: "\u671D\u5899\u6309 A \u8DF3\u8DC3\n\u518D\u5411\u53CD\u65B9\u5411\u8E6C\u5899"
+      value: "\u6309\u4F4F\u65B9\u5411\u952E\u548C\u4E0A\n\u5411\u4E0A\u6500\u722C"
       objectReference: {fileID: 0}
     - target: {fileID: 8855305897564131457, guid: 85290839963e68843a1b41567d38a7c2, type: 3}
       propertyPath: m_text
@@ -2797,6 +2814,9 @@ MonoBehaviour:
   targetSceneName: scence1_2
   triggerSize: {x: 3, y: 4}
   additive: 0
+  requireInteraction: 0
+  hintText: "\u6309 X \u4EA4\u4E92"
+  externalTriggerOnly: 0
   fadeInDuration: 0.4
   fadeOutDuration: 0.5
 --- !u!4 &1587396268

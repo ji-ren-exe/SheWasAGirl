@@ -75,8 +75,8 @@ namespace Myd.Platform
             hintLabel.text = hintText;
             hintLabel.raycastTarget = false;
 
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             hintLabel.font = font;
         }
 
@@ -119,7 +119,11 @@ namespace Myd.Platform
                 confirmCallback: (pwd) =>
                 {
                     if (pwd == SafeController.Combination)
+                    {
+                        // 密码正确：开箱轻震（Xbox/桥接手柄有效）
+                        RumbleDriver.Play(0.45f, 0.25f);
                         StartCoroutine(SuccessSequence());
+                    }
                     else
                     {
                         // 密码错误：提示并可重试
@@ -278,18 +282,11 @@ namespace Myd.Platform
 
             UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
 
-            // 等待新场景角色就绪后淡出
-            yield return new WaitUntil(() => Player.Current != null);
-            yield return new WaitForSeconds(0.3f);
-
-            float t2 = 0f;
-            while (t2 < 0.5f)
-            {
-                t2 += Time.unscaledDeltaTime;
-                img.color = new Color(0, 0, 0, Mathf.Clamp01(1f - t2 / 0.5f));
-                yield return null;
-            }
-            Destroy(go);
+            // 本协程宿主（SafeUnlocker）随旧场景卸载销毁而中止，
+            // 淡出必须由挂在 DontDestroyOnLoad 黑屏 Canvas 上的 SceneFadeOut 接管，
+            // 否则黑屏永不淡出（卡死黑屏即此 bug）
+            go.AddComponent<SceneFadeOut>();
+            SceneFadeOut.Begin(0.5f);
         }
 
         private void ShowHint()

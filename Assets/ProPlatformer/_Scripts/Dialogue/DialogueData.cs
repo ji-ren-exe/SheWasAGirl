@@ -18,6 +18,8 @@ namespace Myd.Platform.Dialogue
         public float duration = 3f;
         [Tooltip("说话者标记：0=玩家（跟随玩家），1/2/3...=场景中对应 Speaker 角色的编号。气泡会出现在该角色旁边")]
         public int speakerId = 0;
+        [Tooltip("本条气泡位置：Inherit=沿用对话级设置，其他值仅对本条气泡生效（同一段对话可混用）")]
+        public BubblePositionMode positionMode = BubblePositionMode.Inherit;
 
         [Header("延迟音效")]
         [Tooltip("气泡出现后延迟播放的音效（null 则不播放）")]
@@ -37,7 +39,7 @@ namespace Myd.Platform.Dialogue
         public List<DialogueBubble> bubbles = new List<DialogueBubble>();
 
         [Header("气泡位置")]
-        [Tooltip("气泡位置模式：Default=跟随面朝方向，LeftBottom=固定角色左下方")]
+        [Tooltip("对话级默认气泡位置模式（逐条气泡可用 positionMode 覆盖）")]
         public BubblePositionMode bubblePosition = BubblePositionMode.Default;
     }
 
@@ -47,6 +49,7 @@ namespace Myd.Platform.Dialogue
         LeftBottom,
         CenterTop,   // 锚点正上方居中（不随面朝方向偏移，靠边物体防出屏）
         LeftTop,     // 锚点上方偏左侧（固定朝左，靠右屏边物体用）
-        ScreenCenter // 画面正中央（过场独白用）
+        ScreenCenter, // 画面正中央（过场独白用）
+        Inherit      // 仅用于逐条气泡：沿用对话级设置
     }
 }

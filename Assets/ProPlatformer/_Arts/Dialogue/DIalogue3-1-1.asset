@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b80b22ee2fbbba41b0ef64ab39ff9f5, type: 3}
+  m_Name: DIalogue3-1-1
+  m_EditorClassIdentifier: 
+  dialogueId: 
+  bubbles:
+  - portrait: {fileID: 0}
+    text: "\u4E00\u4F1A\u505A\u4EC0\u4E48\u996D\u5462"
+    duration: 3
+    speakerId: 0
+    delayedSound: {fileID: 8300000, guid: d4f5b298294302e4bb4d42c5c5303510, type: 3}
+    delayedSoundDelay: 1
+    delayedSoundVolume: 1
+  - portrait: {fileID: 0}
+    text: "\u597D\u5947\u602A\uFF0C\u8FD9\u53F0\u7535\u8BDD\u4E0D\u662F\u6CA1\u63D2\u7EBF\u5417"
+    duration: 3
+    speakerId: 0
+    delayedSound: {fileID: 0}
+    delayedSoundDelay: 1
+    delayedSoundVolume: 1
+  bubblePosition: 0

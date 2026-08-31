@@ -45,11 +45,24 @@ namespace Myd.Platform
         [SerializeField] private Sprite[] motherIdleFrames;
         [SerializeField] private Sprite[] motherRunFrames;
         [SerializeField] private Sprite[] motherJumpFrames;
+        // --- 母亲2/3/4帧动画（场景固定角色用） ---
+        [Header("母亲2动画")]
+        [SerializeField] private Sprite[] mother2IdleFrames;
+        [SerializeField] private Sprite[] mother2RunFrames;
+        [SerializeField] private Sprite[] mother2JumpFrames;
+        [Header("母亲3动画")]
+        [SerializeField] private Sprite[] mother3IdleFrames;
+        [SerializeField] private Sprite[] mother3RunFrames;
+        [SerializeField] private Sprite[] mother3JumpFrames;
+        [Header("母亲4动画")]
+        [SerializeField] private Sprite[] mother4IdleFrames;
+        [SerializeField] private Sprite[] mother4RunFrames;
+        [SerializeField] private Sprite[] mother4JumpFrames;
         // 母亲精灵缩放：母亲图 182px / 女儿图 70px ≈ 2.6，取倒数使母亲视觉大小接近女儿
         [SerializeField] private float motherSpriteScale = 0.38f;
         // 母亲精灵 Y 偏移：在 Sprite 子物体原始 localPosition 基础上叠加
         [SerializeField] private float motherSpriteYOffset = 0f;
-        // 当前激活角色：0=女儿, 1=母亲
+        // 当前激活角色：0=女儿, 1=母亲1, 2=母亲2, 3=母亲3, 4=母亲4
         public int ActiveCharacter { get; private set; } = 0;
 
         // --- 可在 Inspector 中实时调整的碰撞盒参数 ---
@@ -104,6 +117,7 @@ namespace Myd.Platform
         {
             LoadFrames();
             LoadMotherFrames();
+            LoadMotherVariantFrames();
             // 缓存 Sprite 子物体初始 localPosition（切换角色时在此基础上叠加偏移）
             spriteRendererBaseLocalPos = spriteRenderer.transform.localPosition;
             DisableOriginalHair();
@@ -209,13 +223,19 @@ namespace Myd.Platform
 
         private void LoadFrames()
         {
+#if UNITY_EDITOR
+            // 编辑器：运行时动态加载（切片改动立即生效）
             idleFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Daughter/DaughterIdle.png");
             runFrames  = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Daughter/DaughterRun.png");
             jumpFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Daughter/DaughterJump.png");
+#else
+            // 打包：使用 Prefab 序列化的帧数组（编辑器脚本已填充）
+#endif
         }
 
         private static Sprite[] LoadAll(string path)
         {
+#if UNITY_EDITOR
             var sprites = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
             var list = new List<KeyValuePair<int, Sprite>>();
             foreach (var s in sprites)
@@ -232,21 +252,75 @@ namespace Myd.Platform
             for (int i = 0; i < list.Count; i++) result[i] = list[i].Value;
             Debug.Log($"[PlayerRenderer] Loaded {result.Length} frames from {path}");
             return result;
+#else
+            return null;
+#endif
         }
 
         private void LoadMotherFrames()
         {
+#if UNITY_EDITOR
             motherIdleFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherIdle.png");
             motherRunFrames  = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherRun.png");
             motherJumpFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother/MotherJump.png");
+#endif
         }
 
         /// <summary>
-        /// 切换角色（0=女儿, 1=母亲），重置动画状态
+        /// 加载母亲2/3/4帧集（与母亲1同管线：水平条带+8帧切片）
+        /// </summary>
+        private void LoadMotherVariantFrames()
+        {
+#if UNITY_EDITOR
+            mother2IdleFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother2/Mother2Idle.png");
+            mother2RunFrames  = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother2/Mother2Run.png");
+            mother2JumpFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother2/Mother2Jump.png");
+            mother3IdleFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother3/Mother3Idle.png");
+            mother3RunFrames  = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother3/Mother3Run.png");
+            mother3JumpFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother3/Mother3Jump.png");
+            mother4IdleFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother4/Mother4Idle.png");
+            mother4RunFrames  = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother4/Mother4Run.png");
+            mother4JumpFrames = LoadAll("Assets/ProPlatformer/_Arts/Textures/Player/Mother4/Mother4Jump.png");
+#endif
+        }
+
+        /// <summary>
+        /// 按当前角色取帧数组（0=女儿, 1~4=母亲1~4）
+        /// </summary>
+        private Sprite[] GetFrames(AnimState state)
+        {
+            switch (state)
+            {
+                case AnimState.Run:  return GetFramesByChar(runFrames, motherRunFrames, mother2RunFrames, mother3RunFrames, mother4RunFrames);
+                case AnimState.Jump: return GetFramesByChar(jumpFrames, motherJumpFrames, mother2JumpFrames, mother3JumpFrames, mother4JumpFrames);
+                default:             return GetFramesByChar(idleFrames, motherIdleFrames, mother2IdleFrames, mother3IdleFrames, mother4IdleFrames);
+            }
+        }
+
+        private Sprite[] GetFramesByChar(Sprite[] daughter, Sprite[] m1, Sprite[] m2, Sprite[] m3, Sprite[] m4)
+        {
+            switch (ActiveCharacter)
+            {
+                case 1: return m1 != null && m1.Length > 0 ? m1 : daughter;
+                case 2: return m2 != null && m2.Length > 0 ? m2 : daughter;
+                case 3: return m3 != null && m3.Length > 0 ? m3 : daughter;
+                case 4: return m4 != null && m4.Length > 0 ? m4 : daughter;
+                default: return daughter;
+            }
+        }
+
+        /// <summary>
+        /// 角色是否为母亲系（1~4）：使用母亲渲染分支（中心pivot+等比缩放+Y偏移补偿）
+        /// </summary>
+        private bool IsMotherActive => ActiveCharacter >= 1;
+
+        /// <summary>
+        /// 切换角色（0=女儿, 1=母亲1, 2=母亲2, 3=母亲3, 4=母亲4），重置动画状态
         /// </summary>
         public void SwitchCharacter(int charId)
         {
-            ActiveCharacter = charId;
+            ActiveCharacter = Mathf.Clamp(charId, 0, 4);
+            CharacterAbilities.CurrentCharacter = ActiveCharacter;
             currentAnim = AnimState.Idle;
             frameIndex = 0;
             frameTimer = 0f;
@@ -262,7 +336,7 @@ namespace Myd.Platform
 
             float sceneScale = GetScenePlayerScale();
 
-            if (ActiveCharacter == 1)
+            if (IsMotherActive)
             {
                 // 母亲：等比缩放（不拉伸）+ 在原始 localPosition 基础上叠加 Y 偏移
                 this.spriteRenderer.transform.localScale = new Vector3(scale.x * motherSpriteScale * sceneScale, scale.y * motherSpriteScale * sceneScale, 1f);
@@ -340,24 +414,13 @@ namespace Myd.Platform
 
             Sprite[] frames;
             float fps;
-            // 根据当前角色选择帧数组
-            if (ActiveCharacter == 1)
+            // 根据当前角色选择帧数组（0=女儿,1~4=母亲1~4）
+            frames = GetFrames(currentAnim);
+            switch (currentAnim)
             {
-                switch (currentAnim)
-                {
-                    case AnimState.Run:  frames = motherRunFrames;  fps = runFPS;  break;
-                    case AnimState.Jump:  frames = motherJumpFrames;  fps = jumpFPS;  break;
-                    default:             frames = motherIdleFrames;  fps = idleFPS;  break;
-                }
-            }
-            else
-            {
-                switch (currentAnim)
-                {
-                    case AnimState.Run:  frames = runFrames;  fps = runFPS;  break;
-                    case AnimState.Jump:  frames = jumpFrames;  fps = jumpFPS;  break;
-                    default:             frames = idleFrames;  fps = idleFPS;  break;
-                }
+                case AnimState.Run:  fps = runFPS;  break;
+                case AnimState.Jump: fps = jumpFPS; break;
+                default:             fps = idleFPS; break;
             }
 
             if (frames == null || frames.Length == 0) return;
@@ -374,7 +437,7 @@ namespace Myd.Platform
 
             // 跑步缩小到0.8（母亲跑步放大到1.2），跳跃放大到1.2，站立为1.0
             float animScale = 1f;
-            if (currentAnim == AnimState.Run) animScale = ActiveCharacter == 1 ? 1.1f : 0.8f;
+            if (currentAnim == AnimState.Run) animScale = IsMotherActive ? 1.1f : 0.8f;
             else if (currentAnim == AnimState.Jump) animScale = 1.2f;
             currSpriteScale = new Vector2(animScale, animScale);
 
@@ -419,6 +482,76 @@ namespace Myd.Platform
             }
 
             wasOnGroundLastFrame = onGround;
+            onGround_lastKnown = onGround;
+
+            // 被禁能力输入反馈：母亲3/4按了不可用指令时播放"身体好沉重"
+            CheckBlockedAbilityFeedback();
+        }
+
+        // ---- 被禁能力反馈 ----
+        private float blockedFeedbackCooldown = -10f;
+        private const float BlockedFeedbackInterval = 1.5f;
+
+        /// <summary>
+        /// 检测被禁指令输入（在 UpdateAnimation 末尾调用，此时本帧控制器已更新：
+        /// 按键缓冲未被消费=这次按键没有产生任何动作）
+        /// 母亲3：冲刺键、空中跳跃键（二段跳被禁）
+        /// 母亲4：跳跃键（全禁）、冲刺键
+        /// </summary>
+        private void CheckBlockedAbilityFeedback()
+        {
+            if (ActiveCharacter < 3) return;
+            if (Time.time < blockedFeedbackCooldown) return;
+            var dm = Dialogue.DialogueManager.Instance;
+            if (dm != null && dm.IsPlaying) return;
+
+            bool jumpRaw = UnityEngine.Input.GetKeyDown(KeyCode.Space) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton0);
+            bool dashRaw = UnityEngine.Input.GetKeyDown(KeyCode.K) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5);
+
+            bool blocked = false;
+            if (dashRaw)
+            {
+                // 冲刺：母亲3/4均被禁
+                blocked = true;
+            }
+            else if (jumpRaw)
+            {
+                if (ActiveCharacter == 4)
+                {
+                    // 跳跃：母亲4全禁
+                    blocked = true;
+                }
+                else if (!onGround_lastKnown && GameInput.Jump.BufferActive)
+                {
+                    // 母亲3空中按跳：缓冲未被消费（二段跳被禁且无墙跳可触发）
+                    blocked = true;
+                }
+            }
+
+            if (!blocked) return;
+            blockedFeedbackCooldown = Time.time + BlockedFeedbackInterval;
+            PlayBlockedAbilityDialogue();
+        }
+
+        /// <summary>UpdateAnimation 缓存的地面状态（反馈判定用）</summary>
+        private bool onGround_lastKnown = true;
+
+        /// <summary>
+        /// 动态构造单气泡对话"身体好沉重"并播放（跟随玩家头顶）
+        /// </summary>
+        private void PlayBlockedAbilityDialogue()
+        {
+            var dm = Dialogue.DialogueManager.Instance;
+            if (dm == null) return;
+
+            var data = ScriptableObject.CreateInstance<Dialogue.DialogueData>();
+            data.bubbles.Add(new Dialogue.DialogueBubble
+            {
+                text = "身体好沉重",
+                duration = 1.6f,
+                speakerId = 0
+            });
+            dm.Play(data);
         }
 
         private void PlayClip(AudioClip clip, float volume)

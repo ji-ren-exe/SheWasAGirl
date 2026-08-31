@@ -51,6 +51,9 @@ namespace Myd.Platform
             windActive = true;
             Debug.Log("[WindPower] 疾风模式启动！");
 
+            // 0. 进入疾风模式：手柄长震（Xbox/桥接手柄有效）
+            RumbleDriver.Play(0.85f, 0.8f);
+
             // 1. 相机拉远（协程过渡）
             StartCoroutine(ZoomCamera());
 
@@ -213,7 +216,9 @@ namespace Myd.Platform
             Gizmos.DrawCube(transform.position, triggerSize);
             Gizmos.color = new Color(0.4f, 0.9f, 1f);
             Gizmos.DrawWireCube(transform.position, triggerSize);
+#if UNITY_EDITOR
             UnityEditor.Handles.Label(transform.position + Vector3.up * 2f, "风之力量");
+#endif
         }
     }
 
@@ -235,7 +240,7 @@ namespace Myd.Platform
             main.duration = 999f; main.loop = true;
             main.startLifetime = new ParticleSystem.MinMaxCurve(1.2f, 2.2f); // 长寿命→线条缓慢飘过
             main.startSpeed = 0f;
-            main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.09f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.1f);   // 与能量球环绕粒子统一粒径
             main.startColor = new Color(0.92f, 0.97f, 1f, 0.55f);
             main.maxParticles = 12; // 硬上限：同屏最多 12，实际存活 3~5 条
             main.simulationSpace = ParticleSystemSimulationSpace.World;

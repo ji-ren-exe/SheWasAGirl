@@ -82,8 +82,8 @@ namespace Myd.Platform
             hintLabel.text = hintText;
             hintLabel.raycastTarget = false;
 
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             hintLabel.font = font;
         }
 
@@ -121,6 +121,9 @@ namespace Myd.Platform
             }
 
             Debug.Log($"[ObjectRevealer] Activated {targets?.Length ?? 0} objects");
+
+            // 大树生成时刻：手柄震动反馈（Xbox/桥接手柄有效）
+            RumbleDriver.Play(0.6f, 0.4f);
 
             // 交互后同时触发角色切换（等效按 Tab）
             var csc = FindObjectOfType<CharacterSwitchController>();

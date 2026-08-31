@@ -103,8 +103,8 @@ namespace Myd.Platform.Quest
             descLabel.verticalOverflow = VerticalWrapMode.Overflow;
 
             // 字体
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             descLabel.font = font;
 
             panelRoot.gameObject.SetActive(false);

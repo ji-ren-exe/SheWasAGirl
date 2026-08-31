@@ -48,6 +48,9 @@ namespace Myd.Platform
             this.bufferCounter = 0f;
         }
 
+        /// <summary>按键缓冲是否仍在（未被任何动作消费）——用于"按了键但没动作"检测</summary>
+        public bool BufferActive => this.bufferCounter > 0f;
+
         public bool Pressed()
         {
             bool keyboard = UnityEngine.Input.GetKeyDown(key);

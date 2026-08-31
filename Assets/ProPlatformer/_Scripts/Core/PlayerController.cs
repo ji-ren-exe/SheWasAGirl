@@ -66,6 +66,26 @@ namespace Myd.Platform
             stamina = Constants.ClimbMaxStamina;
         }
 
+        // ---- 受击僵直（母亲4踩尖刺）----
+        private const float HurtKnockbackDecay = 12f;   // 后退初速衰减（单位/秒²）
+        private float hurtStunTimer;
+        private float hurtStunSpeedX;
+
+        /// <summary>受击僵直中：移动输入被锁定</summary>
+        public bool IsHurtStunned => hurtStunTimer > 0;
+
+        /// <summary>
+        /// 受击僵直+微小后退：锁定输入 duration 秒，向面朝反方向以 knockbackSpeed 初速滑退并自然减速
+        /// </summary>
+        public void HurtStun(float duration, float knockbackSpeed)
+        {
+            hurtStunTimer = duration;
+            hurtStunSpeedX = -(int)Facing * knockbackSpeed;
+            Speed.x = hurtStunSpeedX;
+            Ducking = false;
+            SetState((int)EActionState.Normal);
+        }
+
         public bool IsAttachedToRope => attachedToRope;
 
         /// <summary>
@@ -256,7 +276,13 @@ namespace Myd.Platform
                 }
 
                 //Force Move X
-                if (ForceMoveXTimer > 0)
+                if (hurtStunTimer > 0)
+                {
+                    // 受击僵直：锁移动输入（母亲4踩尖刺）
+                    hurtStunTimer -= deltaTime;
+                    this.moveX = 0;
+                }
+                else if (ForceMoveXTimer > 0)
                 {
                     ForceMoveXTimer -= deltaTime;
                     this.moveX = ForceMoveX;
@@ -330,6 +356,14 @@ namespace Myd.Platform
 
             //状态机更新逻辑
             stateMachine.Update(deltaTime);
+
+            //受击僵直后退：手动衰减水平速度（绕过跑步摩擦的快速归零，产生可见的滑退）
+            if (hurtStunTimer > 0)
+            {
+                hurtStunSpeedX = Mathf.MoveTowards(hurtStunSpeedX, 0f, HurtKnockbackDecay * deltaTime);
+                Speed.x = hurtStunSpeedX;
+            }
+
             //更新位置
             UpdateCollideX(Speed.x * deltaTime);
             UpdateCollideY(Speed.y * deltaTime);
@@ -342,6 +376,7 @@ namespace Myd.Platform
         //处理跳跃,跳跃时候，会给跳跃前方一个额外的速度
         public void Jump()
         {
+            if (!CharacterAbilities.AllowJump) return;
             GameInput.Jump.ConsumeBuffer();
             this.JumpCheck?.ResetTime();
             this.WallSlideTimer = Constants.WallSlideTime;
@@ -361,6 +396,7 @@ namespace Myd.Platform
         //Dash->Jump->Dush
         public void SuperJump()
         {
+            if (!CharacterAbilities.AllowJump) return;
             GameInput.Jump.ConsumeBuffer();
             this.JumpCheck?.ResetTime();
             varJumpTimer = Constants.VarJumpTime;
@@ -387,6 +423,7 @@ namespace Myd.Platform
         //在墙边情况下的，跳跃。主要需要考虑当前跳跃朝向
         public void WallJump(int dir)
         {
+            if (!CharacterAbilities.AllowJump) return;
             GameInput.Jump.ConsumeBuffer();
             Ducking = false;
             this.JumpCheck?.ResetTime();
@@ -415,6 +452,7 @@ namespace Myd.Platform
 
         public void ClimbJump()
         {
+            if (!CharacterAbilities.AllowJump) return;
             if (!onGround)
             {
                 ConsumeStamina(Constants.ClimbJumpCost);
@@ -429,6 +467,7 @@ namespace Myd.Platform
         //在墙边Dash时，当前按住上，不按左右时，执行SuperWallJump
         public void SuperWallJump(int dir)
         {
+            if (!CharacterAbilities.AllowJump) return;
             GameInput.Jump.ConsumeBuffer();
             Ducking = false;
             this.JumpCheck?.ResetTime();
@@ -462,10 +501,11 @@ namespace Myd.Platform
         /// <summary>
         /// 二段跳：空中按跳跃时，消耗一次空中跳跃
         /// </summary>
-        public bool CanAirJump => !this.onGround && this.airJumps > 0;
+        public bool CanAirJump => !this.onGround && this.airJumps > 0 && CharacterAbilities.AllowDoubleJump;
 
         public void AirJump()
         {
+            if (!CharacterAbilities.AllowDoubleJump) return;
             GameInput.Jump.ConsumeBuffer();
             this.airJumps--;
             varJumpTimer = Constants.VarJumpTime;
@@ -480,7 +520,7 @@ namespace Myd.Platform
         {
             get
             {
-                return GameInput.Dash.Pressed() && dashCooldownTimer <= 0 && this.dashes > 0;
+                return CharacterAbilities.AllowDash && GameInput.Dash.Pressed() && dashCooldownTimer <= 0 && this.dashes > 0;
             }
         }
 

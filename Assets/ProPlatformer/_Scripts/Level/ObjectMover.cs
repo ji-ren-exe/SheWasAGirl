@@ -39,6 +39,7 @@ namespace Myd.Platform
 
         private bool dragging;
         private float dragOffsetX;
+        private float rumbleTimer;   // 拖动中震动脉冲计时
         private RectTransform hintRoot;
         private UnityEngine.UI.Text hintLabel;
 
@@ -97,8 +98,8 @@ namespace Myd.Platform
             hintLabel.text = hintText;
             hintLabel.raycastTarget = false;
 
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             hintLabel.font = font;
         }
 
@@ -130,9 +131,18 @@ namespace Myd.Platform
                 if (!HoldKey)
                 {
                     dragging = false;
+                    rumbleTimer = 0f;
                     TeleportLinkedBesidePlayer();
                     pendingRestore = disabledColliders.Count > 0;
                     return;
+                }
+                // 拖动中持续震动：每 0.35s 一个短脉冲（0.2s/低强度），模拟拖拽的沉闷阻力感；
+                // 脉冲式而非一条长震，避免盖过拖动期间可能触发的其他事件震动
+                rumbleTimer += Time.deltaTime;
+                if (rumbleTimer >= 0.35f)
+                {
+                    rumbleTimer = 0f;
+                    RumbleDriver.Play(0.35f, 0.2f);
                 }
                 // 跟随玩家水平移动（Y/Z 不变，保持贴地）。联动物体保持静止（松开时才瞬移）。
                 var t = moveTarget.transform;

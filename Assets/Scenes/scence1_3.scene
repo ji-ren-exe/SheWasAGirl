@@ -4551,8 +4551,17 @@ MonoBehaviour:
     m_Extent: {x: 58, y: 19, z: 0}
   StartPosition: {x: -11.519066, y: -0.5170336}
   cameraBoundsInset: {x: 18.854736, y: 16.47934}
+  boundsFromSpawnAndTransitionsOnly: 0
+  disableCameraBounds: 0
+  spawnTransitionThirdScreenBounds: 0
+  mirrorSceneCamera: 0
+  mirrorAxis: {fileID: 0}
+  mirrorMinOrtho: 3.5
+  mirrorMaxOrtho: 32
   lockCamera: 0
   lockTarget: {fileID: 0}
+  playerScale: 1
+  playerCharacter: 0
 --- !u!4 &374645084
 Transform:
   m_ObjectHideFlags: 0
@@ -16726,8 +16735,8 @@ Transform:
   m_GameObject: {fileID: 1576907737}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.7515, y: -10.8445, z: 0}
-  m_LocalScale: {x: 2.9007812, y: 2.9918773, z: 3.1107574}
+  m_LocalPosition: {x: -7.8068, y: -11.7529, z: 0}
+  m_LocalScale: {x: 2.9535754, y: 3.0939004, z: 3.1107574}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}

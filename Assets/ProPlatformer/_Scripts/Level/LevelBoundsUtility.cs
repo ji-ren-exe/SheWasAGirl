@@ -32,17 +32,34 @@ namespace Myd.Platform
                 if (p.y > maxY) maxY = p.y;
             }
 
-            // 纳入所有 Ground 层实体平台（覆盖纵向关卡的爬高区域）
-            int groundMask = LayerMask.GetMask("Ground");
-            foreach (var col in Object.FindObjectsOfType<Collider2D>())
+            // 特殊取景模式：横向=出生点向左1/3屏宽 ~ 最右切换点向右1/3屏宽，纵向不限制（Y 钳制永不生效）
+            if (level.spawnTransitionThirdScreenBounds)
             {
-                if (col.isTrigger) continue;
-                if (((1 << col.gameObject.layer) & groundMask) == 0) continue;
-                Bounds b = col.bounds;
-                if (b.min.x < minX) minX = b.min.x;
-                if (b.max.x > maxX) maxX = b.max.x;
-                if (b.min.y < minY) minY = b.min.y;
-                if (b.max.y > maxY) maxY = b.max.y;
+                float hw, hh;
+                GetHalfView(out hw, out hh);
+                float third = hw * 2f / 3f;
+                float bMinX = spawn.x - third;
+                float bMaxX = maxX + third;
+                return new Bounds(
+                    new Vector3((bMinX + bMaxX) / 2f, spawn.y, 0f),
+                    new Vector3(Mathf.Max(bMaxX - bMinX, 1f), 1000f, 0f));
+            }
+
+            // 纳入所有 Ground 层实体平台（覆盖纵向关卡的爬高区域）
+            // boundsFromSpawnAndTransitionsOnly=true 时跳过（装饰性大地面不参与范围）
+            if (!level.boundsFromSpawnAndTransitionsOnly)
+            {
+                int groundMask = LayerMask.GetMask("Ground");
+                foreach (var col in Object.FindObjectsOfType<Collider2D>())
+                {
+                    if (col.isTrigger) continue;
+                    if (((1 << col.gameObject.layer) & groundMask) == 0) continue;
+                    Bounds b = col.bounds;
+                    if (b.min.x < minX) minX = b.min.x;
+                    if (b.max.x > maxX) maxX = b.max.x;
+                    if (b.min.y < minY) minY = b.min.y;
+                    if (b.max.y > maxY) maxY = b.max.y;
+                }
             }
 
             // 半屏（按当前相机正交尺寸，宽高比 16:9 换算）+ 余量

@@ -23,6 +23,9 @@ namespace Myd.Platform
         private IGameContext gameContext;
 
         public Vector2 Position => playerController != null ? playerController.Position : Vector2.zero;
+
+        /// <summary>核心控制器（供外部系统调用，如受击僵直）</summary>
+        public PlayerController Controller => playerController;
         public bool IsAttachedToRope => playerController != null && playerController.IsAttachedToRope;
         public bool HasStamina => playerController == null || playerController.HasStamina;
         public float StaminaPercent => playerController != null ? playerController.StaminaPercent : 1f;
@@ -42,15 +45,22 @@ namespace Myd.Platform
         //加载玩家实体
         public void Reload(Bounds bounds, Vector2 startPosition)
         {
-            // 加载女儿角色属性并应用到 Constants
-            var stats = Resources.Load<CharacterStats>("DaughterStats");
+            // 场景固定角色（Level.playerCharacter）：0=女儿加载女儿属性，1~4=母亲系加载母亲属性
+            var level = UnityEngine.Object.FindObjectOfType<Level>();
+            int sceneChar = level != null ? Mathf.Clamp(level.playerCharacter, 0, 4) : 0;
+
+            // 加载角色属性并应用到 Constants
+            var stats = Resources.Load<CharacterStats>(sceneChar >= 1 ? "MotherStats" : "DaughterStats");
             if (stats != null)
             {
                 stats.ApplyToConstants();
             }
 
-            this.playerRenderer = Object.Instantiate(Resources.Load<PlayerRenderer>("PlayerRenderer"));
+            this.playerRenderer = UnityEngine.Object.Instantiate(Resources.Load<PlayerRenderer>("PlayerRenderer"));
             this.playerRenderer.Reload();
+            // 场景指定非女儿时切换到对应母亲（帧集在 Reload 中已加载）
+            if (sceneChar >= 1)
+                this.playerRenderer.SwitchCharacter(sceneChar);
             //初始化
             this.playerController = new PlayerController(playerRenderer, gameContext.EffectControl);
             this.playerController.Init(bounds, startPosition);

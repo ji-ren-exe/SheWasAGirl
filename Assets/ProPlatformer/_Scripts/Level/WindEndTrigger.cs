@@ -36,7 +36,9 @@ namespace Myd.Platform
             Gizmos.DrawCube(transform.position, triggerSize);
             Gizmos.color = new Color(1f, 0.6f, 0.3f);
             Gizmos.DrawWireCube(transform.position, triggerSize);
+#if UNITY_EDITOR
             UnityEditor.Handles.Label(transform.position + Vector3.up * 2f, "疾风结束");
+#endif
         }
     }
 }

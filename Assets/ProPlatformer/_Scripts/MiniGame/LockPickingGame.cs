@@ -140,6 +140,8 @@ namespace Myd.Platform
                 statusText.text = "咔嗒！锁开了！";
 
             Debug.Log("[LockPickingGame] Success!");
+            // 成功时刻：手柄震动反馈（Xbox/桥接手柄有效）
+            RumbleDriver.Play(0.7f, 0.35f);
             StartCoroutine(DelayedCallback(1.5f, () =>
             {
                 // 恢复游戏
@@ -276,8 +278,8 @@ namespace Myd.Platform
             statusText.alignment = TextAnchor.MiddleCenter;
             statusText.text = "A/D 切换圆环  W/S 旋转  Esc 取消";
             statusText.raycastTarget = false;
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             statusText.font = font;
         }
 

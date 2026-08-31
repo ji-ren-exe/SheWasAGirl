@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/TitleScene.scene
+    guid: ed629d613adc8384cbec9096aac08e9c
+  - enabled: 1
     path: Assets/Scenes/SampleScene.scene
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
@@ -32,6 +35,33 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/scence3_1.scene
     guid: 5bb25a7e5df454542828968e52ef37ba
+  - enabled: 1
+    path: Assets/Scenes/scence2_1 1.scene
+    guid: 44516025070d45d40909a7ee12e4a10f
+  - enabled: 1
+    path: Assets/Scenes/scence3_2.scene
+    guid: 8f86d9ee486c6974ca90c805b25c4111
+  - enabled: 1
+    path: Assets/Scenes/scence3_3.scene
+    guid: c0593bf0ec963f7469d91a8a9408eed6
+  - enabled: 1
+    path: Assets/Scenes/scence3_4.scene
+    guid: 9073dbd457af52845a919dd80719ee7e
+  - enabled: 1
+    path: Assets/Scenes/scence2_4.scene
+    guid: 520f93c9297f2ee4e967cb0c65174ccb
+  - enabled: 1
+    path: Assets/Scenes/scence3_5.scene
+    guid: abcfec6c4c6f7a346823745f43df279c
+  - enabled: 1
+    path: Assets/Scenes/scence3_6.scene
+    guid: 193bfe4b083ae824a97b1681421b82c9
+  - enabled: 1
+    path: Assets/Scenes/scence3_7.scene
+    guid: 80f8c1e257704c641b87f776dabd9939
+  - enabled: 1
+    path: Assets/Scenes/scence3_8.scene
+    guid: 0f6e7e0f6b5e8e64a8b70a9c8b890f7e
   m_BuildProfiles: []
   m_configObjects: {}
   m_SlimFeaturesWeixinMiniGame:

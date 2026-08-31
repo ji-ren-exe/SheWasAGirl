@@ -25,6 +25,14 @@ namespace Myd.Platform
 
             if (hit)
             {
+                // 母亲4免疫尖刺死亡：只触发受击反馈（镜头震动+手柄震动），不回复活点
+                if (CharacterAbilities.SpikeImmune)
+                {
+                    CharacterAbilities.PlayHurtFeedback();
+                    return;
+                }
+                // 死亡路径同样触发手柄震动（所有场景通用；Xbox/桥接手柄有效）
+                RumbleDriver.Play(0.9f, 0.5f);
                 CheckpointManager.Instance?.RespawnPlayer();
             }
         }

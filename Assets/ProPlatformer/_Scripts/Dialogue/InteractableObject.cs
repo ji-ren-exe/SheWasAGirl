@@ -84,8 +84,8 @@ namespace Myd.Platform.Dialogue
             hintLabel.text = hintText;
             hintLabel.raycastTarget = false;
 
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             hintLabel.font = font;
         }
 

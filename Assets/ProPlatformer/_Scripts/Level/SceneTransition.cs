@@ -78,8 +78,8 @@ namespace Myd.Platform
             hintLabel.text = hintText;
             hintLabel.raycastTarget = false;
 
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             hintLabel.font = font;
         }
 
@@ -207,54 +207,6 @@ namespace Myd.Platform
         }
 
         /// <summary>
-        /// 跨场景黑屏淡出管理器：挂在与 DontDestroyOnLoad Canvas 同对象上。
-        /// 在新场景等待角色就绪（Player.Current != null）+ 缓冲几帧后再淡出，
-        /// 确保新场景的 GameStart 对话/任务等开场事件发生在黑屏之后，
-        /// 不会被黑屏遮住而"无法退出"。
-        /// </summary>
-        private class SceneFadeOut : MonoBehaviour
-        {
-            private float duration = 0.5f;
-            private bool begun;
-            private float waited;
-
-            public static void Begin(float dur)
-            {
-                var inst = Object.FindObjectOfType<SceneFadeOut>();
-                if (inst != null) { inst.duration = dur; inst.begun = true; }
-            }
-
-            private IEnumerator Start()
-            {
-                var img = GetComponentInChildren<UnityEngine.UI.Image>();
-
-                // 等待新场景角色加载（Player 在 Game.Start 协程 yield 后创建）
-                while (Player.Current == null && waited < 10f)
-                {
-                    waited += Time.unscaledDeltaTime;
-                    yield return null;
-                }
-
-                // 角色就绪后再等几帧，让开场事件（GameStart 对话/任务触发/相机定位）完成首帧
-                yield return null;
-                yield return null;
-                yield return null;
-
-                // 淡出：alpha 1 → 0
-                float t = 0f;
-                while (t < duration)
-                {
-                    t += Time.unscaledDeltaTime;
-                    if (img != null) img.color = new Color(0, 0, 0, Mathf.Clamp01(1f - t / duration));
-                    yield return null;
-                }
-
-                // 清理跨场景对象
-                Destroy(gameObject);
-            }
-        }
-
-        /// <summary>
         /// 创建顶层黑屏 Canvas（DontDestroyOnLoad，跨场景）
         /// </summary>
         private Canvas CreateFadeCanvas()
@@ -295,8 +247,60 @@ namespace Myd.Platform
             Gizmos.DrawWireCube(transform.position, triggerSize);
 
             // 标注目标场景名
+#if UNITY_EDITOR
             var label = requireInteraction ? $"→ {targetSceneName} (按X)" : $"→ {targetSceneName}";
             UnityEditor.Handles.Label(transform.position + Vector3.up * 1.5f, label);
+#endif
+        }
+    }
+
+    /// <summary>
+    /// 跨场景黑屏淡出管理器：挂在与 DontDestroyOnLoad Canvas 同对象上。
+    /// 在新场景等待角色就绪（Player.Current != null）+ 缓冲几帧后再淡出，
+    /// 确保新场景的 GameStart 对话/任务等开场事件发生在黑屏之后，
+    /// 不会被黑屏遮住而"无法退出"。
+    /// 供 SceneTransition / DoorOpener / SafeUnlocker 等一切跨场景切换复用：
+    /// 触发组件的协程会随旧场景卸载销毁而中止，淡出逻辑必须挂在本组件上。
+    /// </summary>
+    public class SceneFadeOut : MonoBehaviour
+    {
+        private float duration = 0.5f;
+        private bool begun;
+        private float waited;
+
+        public static void Begin(float dur)
+        {
+            var inst = Object.FindObjectOfType<SceneFadeOut>();
+            if (inst != null) { inst.duration = dur; inst.begun = true; }
+        }
+
+        private IEnumerator Start()
+        {
+            var img = GetComponentInChildren<UnityEngine.UI.Image>();
+
+            // 等待新场景角色加载（Player 在 Game.Start 协程 yield 后创建）
+            while (Player.Current == null && waited < 10f)
+            {
+                waited += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            // 角色就绪后再等几帧，让开场事件（GameStart 对话/任务触发/相机定位）完成首帧
+            yield return null;
+            yield return null;
+            yield return null;
+
+            // 淡出：alpha 1 → 0
+            float t = 0f;
+            while (t < duration)
+            {
+                t += Time.unscaledDeltaTime;
+                if (img != null) img.color = new Color(0, 0, 0, Mathf.Clamp01(1f - t / duration));
+                yield return null;
+            }
+
+            // 清理跨场景对象
+            Destroy(gameObject);
         }
     }
 }

@@ -65,8 +65,8 @@ namespace Myd.Platform
             hintLabel.text = "按 X 开门";
             hintLabel.raycastTarget = false;
 
-            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            Font font = Resources.Load<Font>("NotoSansSC-Regular");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             hintLabel.font = font;
         }
 
@@ -157,27 +157,11 @@ namespace Myd.Platform
             // 加载场景
             SceneManager.LoadScene(targetSceneName);
 
-            // 等待新场景角色加载
-            float waited = 0f;
-            while (Player.Current == null && waited < 10f)
-            {
-                waited += Time.unscaledDeltaTime;
-                yield return null;
-            }
-            yield return null;
-            yield return null;
-            yield return null;
-
-            // 淡出
-            t = 0f;
-            while (t < 0.5f)
-            {
-                t += Time.unscaledDeltaTime;
-                img.color = new Color(0, 0, 0, Mathf.Clamp01(1f - t / 0.5f));
-                yield return null;
-            }
-
-            Destroy(go);
+            // 本协程宿主（DoorOpener）随旧场景卸载销毁而中止，
+            // 淡出必须由挂在 DontDestroyOnLoad 黑屏 Canvas 上的 SceneFadeOut 接管，
+            // 否则黑屏永不淡出（卡死黑屏即此 bug）
+            go.AddComponent<SceneFadeOut>();
+            SceneFadeOut.Begin(0.5f);
         }
 
         private void OnDestroy()
