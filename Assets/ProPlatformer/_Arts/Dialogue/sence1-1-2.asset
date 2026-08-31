@@ -15,10 +15,27 @@ MonoBehaviour:
   dialogueId: 
   bubbles:
   - portrait: {fileID: 0}
-    text: "\u4E3A\u4EC0\u4E48\u6211\u7684\u5929\u8D4B\u8FD9\u4E48\u597D\n\u5988\u5988\u5374\u8981\u963B\u6B62\u6211\u53BB\u5F53\u8FD0\u52A8\u5458\u5462\uFF1F"
+    text: "\u4E3A\u4EC0\u4E48\u6211\u7684\u5929\u8D4B\u8FD9\u4E48\u597D"
     duration: 3
     speakerId: 0
+    positionMode: 5
+    delayedSound: {fileID: 0}
+    delayedSoundDelay: 1
+    delayedSoundVolume: 1
   - portrait: {fileID: 0}
-    text: "\u597D\u60F3\u53BB\u722C\u5C71"
+    text: "\u5988\u5988\u5374\u8981\u963B\u6B62\u6211\u53BB\u5F53\u8FD0\u52A8\u5458\u5462\uFF1F"
     duration: 3
     speakerId: 0
+    positionMode: 5
+    delayedSound: {fileID: 0}
+    delayedSoundDelay: 1
+    delayedSoundVolume: 1
+  - portrait: {fileID: 0}
+    text: "\u5FC3\u60C5\u4E0D\u597D\u5C31\u53BB\u722C\u5C71\u5427\uFF01"
+    duration: 3
+    speakerId: 0
+    positionMode: 5
+    delayedSound: {fileID: 0}
+    delayedSoundDelay: 1
+    delayedSoundVolume: 1
+  bubblePosition: 0

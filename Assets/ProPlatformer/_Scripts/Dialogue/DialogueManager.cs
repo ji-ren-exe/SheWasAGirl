@@ -124,6 +124,8 @@ namespace Myd.Platform.Dialogue
             textLabel.fontSize = fontSize;
             textLabel.color = new Color(0.15f, 0.15f, 0.15f, 1f);
             textLabel.alignment = TextAnchor.MiddleLeft;
+            // 兜底防截断：高度不足时文字溢出显示而非剪掉（正常路径由 ApplyAutoSize 先扩好气泡）
+            textLabel.verticalOverflow = VerticalWrapMode.Overflow;
             textLabel.raycastTarget = false;
 
             // 默认字体
@@ -207,6 +209,9 @@ namespace Myd.Platform.Dialogue
                 else
                     textLabel.rectTransform.offsetMin = new Vector2(portraitSize + 14f, 6f);
 
+                // 气泡高度按完整文本自适应：长句多行时扩展气泡，不再被固定高度截断
+                ApplyAutoSize(bubble.text);
+
                 // 播放气泡音效：先停止上一个，避免连续气泡声音重叠
                 if (audioSource != null && bubbleSound != null)
                 {
@@ -257,6 +262,26 @@ namespace Myd.Platform.Dialogue
             currentDialogue = null;
             currentBubbleMode = BubblePositionMode.Default;
             playing = null;
+        }
+
+        /// <summary>
+        /// 气泡高度自适应文本：按完整文本的期望高度扩展气泡（垂直方向）。
+        /// 打字机逐字显示期间气泡保持全高，长句不再被固定高度截断；
+        /// 头像锚定垂直中心，气泡变高后自动居中，无需额外处理。
+        /// </summary>
+        private void ApplyAutoSize(string fullText)
+        {
+            if (textLabel == null || bubbleRoot == null || string.IsNullOrEmpty(fullText)) return;
+
+            // preferredHeight 按当前文本区宽度计算完整文本所需高度（布局像素）
+            string prev = textLabel.text;
+            textLabel.text = fullText;
+            float prefH = textLabel.preferredHeight;
+            textLabel.text = prev;
+
+            // 上下各留 6px padding，且不低于默认高度
+            float newH = Mathf.Max(bubbleHeight, prefH + 12f);
+            bubbleRoot.sizeDelta = new Vector2(bubbleWidth, newH);
         }
 
         /// <summary>

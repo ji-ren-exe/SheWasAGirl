@@ -18,6 +18,7 @@ MonoBehaviour:
     text: "\u597D\u70E6\u554A\uFF0C\u6211\u660E\u660E\u5F88\u6709\u5929\u8D4B\n\u4F46\u662F\u5988\u5988\u4E0D\u60F3\u8BA9\u6211\u53BB\u5F53\u8FD0\u52A8\u5458"
     duration: 2
     speakerId: 1
+    positionMode: 5
     delayedSound: {fileID: 0}
     delayedSoundDelay: 0
     delayedSoundVolume: 0
@@ -25,6 +26,7 @@ MonoBehaviour:
     text: "\u771F\u7FA1\u6155\u4F60\u554A\uFF0C\u6211\u5728\u8BAD\u7EC3\u65F6\u53D7\u4F24\u4E86\n\u518D\u4E5F\u65E0\u7F18\u8D5B\u573A\u4E86"
     duration: 2
     speakerId: 2
+    positionMode: 5
     delayedSound: {fileID: 0}
     delayedSoundDelay: 0
     delayedSoundVolume: 0
@@ -32,6 +34,24 @@ MonoBehaviour:
     text: "\u90A3\u6211\u66F4\u8981\u73CD\u60DC\u673A\u4F1A\u4E86\uFF0C\n\u5230\u5E95\u662F\u4EC0\u4E48\u539F\u56E0\u5BFC\u81F4\u5988\u5988\u8FD9\u4E48\u53CD\u5BF9\u7684\u5462"
     duration: 2
     speakerId: 1
+    positionMode: 5
     delayedSound: {fileID: 0}
     delayedSoundDelay: 0
     delayedSoundVolume: 0
+  - portrait: {fileID: 0}
+    text: "\u5C31\u8BA9\u6211\u53BB\u627E\u5230\u79D8\u5BC6\u5427"
+    duration: 2
+    speakerId: 1
+    positionMode: 5
+    delayedSound: {fileID: 0}
+    delayedSoundDelay: 0
+    delayedSoundVolume: 0
+  - portrait: {fileID: 0}
+    text: "\u5C31\u8BA9\u6211\u628A\u6211\u7684\u68A6\u60F3\u57CB\u846C\u5427"
+    duration: 2
+    speakerId: 2
+    positionMode: 5
+    delayedSound: {fileID: 0}
+    delayedSoundDelay: 0
+    delayedSoundVolume: 0
+  bubblePosition: 0
