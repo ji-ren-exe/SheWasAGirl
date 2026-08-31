@@ -967,7 +967,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetSceneName: scence3_3
-  triggerSize: {x: 3, y: 3}
+  triggerSize: {x: 3, y: 10}
   additive: 0
   requireInteraction: 1
   hintText: "\u6309 X \u63A5\u7535\u8BDD"
@@ -984,35 +984,35 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1234323650159421688, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_Size.x
-      value: 16.463846
+      value: 16.440025
       objectReference: {fileID: 0}
     - target: {fileID: 1234323650159421688, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_Size.y
-      value: 0.5239593
+      value: 1.0719181
       objectReference: {fileID: 0}
     - target: {fileID: 1234323650159421688, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_SpriteTilingProperty.newSize.x
-      value: 16.463846
+      value: 16.440025
       objectReference: {fileID: 0}
     - target: {fileID: 1234323650159421688, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_SpriteTilingProperty.newSize.y
-      value: 0.5239593
+      value: 1.0719181
       objectReference: {fileID: 0}
     - target: {fileID: 1931893933081424557, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_Size.x
-      value: 16.463846
+      value: 16.440025
       objectReference: {fileID: 0}
     - target: {fileID: 1931893933081424557, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_Size.y
-      value: 0.5239593
+      value: 1.0719181
       objectReference: {fileID: 0}
     - target: {fileID: 5032667396418735305, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.37
+      value: 1.3819
       objectReference: {fileID: 0}
     - target: {fileID: 5032667396418735305, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.16
+      value: -4.886
       objectReference: {fileID: 0}
     - target: {fileID: 5032667396418735305, guid: 41ab9ff3e81e76d4b8a5e8c6e8cc8465, type: 3}
       propertyPath: m_LocalPosition.z

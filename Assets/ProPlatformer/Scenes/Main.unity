@@ -1571,11 +1571,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a161eb931731e3142a04b846561ff57f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelWidth: 300
+  panelWidth: 600
   marginX: 20
   marginY: 20
   titleFontSize: 22
-  descFontSize: 16
+  descFontSize: 32
   fadeTime: 0.3
 --- !u!4 &551963606
 Transform:
@@ -3114,16 +3114,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6844a9d0fae9720498f2155a00fc9d91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bubbleWidth: 240
-  bubbleHeight: 90
-  fontSize: 20
-  portraitSize: 64
+  bubbleWidth: 360
+  bubbleHeight: 135
+  fontSize: 30
+  portraitSize: 96
   charRevealInterval: 0.03
   fadeTime: 0.25
   bubbleSound: {fileID: 8300000, guid: 876a626b31047984a8eecb89c726b94c, type: 3}
   bubbleSoundVolume: 0.6
-  bubbleOffsetX: 130
-  bubbleOffsetY: 60
+  bubbleOffsetX: 195
+  bubbleOffsetY: 90
 --- !u!4 &993924345
 Transform:
   m_ObjectHideFlags: 0

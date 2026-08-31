@@ -11,12 +11,12 @@ namespace Myd.Platform.Quest
         public static QuestUI Instance { get; private set; }
 
         [Header("UI样式")]
-        [SerializeField] private float panelWidth = 180f;
-        [SerializeField] private float panelHeight = 70f;
+        [SerializeField] private float panelWidth = 360f;
+        [SerializeField] private float panelHeight = 140f;
         [SerializeField] private float marginX = 14f;
         [SerializeField] private float marginY = 14f;
         [SerializeField] private int titleFontSize = 12;
-        [SerializeField] private int descFontSize = 10;
+        [SerializeField] private int descFontSize = 20;
 
         [Header("黑板贴图")]
         [SerializeField] private Sprite blackboardSprite;
@@ -53,7 +53,11 @@ namespace Myd.Platform.Quest
                 canvas = gameObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvas.sortingOrder = 400; // 在对话气泡(500)之下
-                gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+                // 分辨率自适应：与 DialogueManager 同基准（1920x1080，宽高各半），跨分辨率大小一致
+                var scaler = gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+                scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920f, 1080f);
+                scaler.matchWidthOrHeight = 0.5f;
             }
 
             // 黑板根节点：锚定左上角，固定尺寸（贴图原生比例 320x150）
@@ -94,7 +98,7 @@ namespace Myd.Platform.Quest
             descLabel = descGo.AddComponent<UnityEngine.UI.Text>();
             descLabel.fontSize = descFontSize;
             descLabel.resizeTextForBestFit = true;       // 自适应
-            descLabel.resizeTextMinSize = 9;
+            descLabel.resizeTextMinSize = 18;
             descLabel.resizeTextMaxSize = descFontSize;
             descLabel.color = new Color(0.88f, 0.9f, 0.85f, 0.92f); // 浅粉笔色
             descLabel.alignment = TextAnchor.MiddleCenter;           // 居中

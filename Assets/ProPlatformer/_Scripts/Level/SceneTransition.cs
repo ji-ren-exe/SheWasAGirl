@@ -44,8 +44,10 @@ namespace Myd.Platform
 
         private void BuildHintUI()
         {
-            // 查找任意 Canvas（DialogueManager 的 Canvas 或自建）
-            Canvas canvas = FindObjectOfType<Canvas>();
+            // 优先 DialogueManager 的画布——经场景切换进入时过渡黑屏 Canvas
+            // （DontDestroyOnLoad，淡出后自毁）会被 FindObjectOfType 抢先命中，提示条随其销毁
+            var dm = FindObjectOfType<Myd.Platform.Dialogue.DialogueManager>();
+            Canvas canvas = dm != null ? dm.GetComponent<Canvas>() : null;
             if (canvas == null)
             {
                 var go = new GameObject("SceneTransitionCanvas");
@@ -57,7 +59,7 @@ namespace Myd.Platform
 
             hintRoot = new GameObject("TransitionHint").AddComponent<RectTransform>();
             hintRoot.SetParent(canvas.transform, false);
-            hintRoot.sizeDelta = new Vector2(120f, 34f);
+            hintRoot.sizeDelta = new Vector2(180f, 51f);
             hintRoot.gameObject.SetActive(false);
 
             var bg = hintRoot.gameObject.AddComponent<UnityEngine.UI.Image>();
@@ -69,10 +71,10 @@ namespace Myd.Platform
             textRect.SetParent(hintRoot, false);
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(4f, 2f);
-            textRect.offsetMax = new Vector2(-4f, -2f);
+            textRect.offsetMin = new Vector2(6f, 3f);
+            textRect.offsetMax = new Vector2(-6f, -3f);
             hintLabel = textGo.AddComponent<UnityEngine.UI.Text>();
-            hintLabel.fontSize = 18;
+            hintLabel.fontSize = 27;
             hintLabel.color = Color.white;
             hintLabel.alignment = TextAnchor.MiddleCenter;
             hintLabel.text = hintText;

@@ -62,7 +62,11 @@ namespace Myd.Platform
         private IEnumerator DelayedBuildHintUI()
         {
             float timeout = 5f;
-            while (FindObjectOfType<Canvas>() == null && timeout > 0f)
+            // 等 DialogueManager 的画布（PlayerRenderer.EnsureGlobalUI 运行时创建）——
+            // 不能用 FindObjectOfType<Canvas>()：经 SceneTransition 进场景时过渡黑屏 Canvas
+            // （DontDestroyOnLoad，淡出后自毁）会被抢先命中，提示条挂上去后随其销毁，
+            // 之后 ShowHint 因 hintRoot==null 静默跳过，提示永远不弹
+            while (Dialogue.DialogueManager.Instance == null && timeout > 0f)
             {
                 timeout -= Time.deltaTime;
                 yield return null;
@@ -72,12 +76,14 @@ namespace Myd.Platform
 
         private void BuildHintUI()
         {
-            Canvas canvas = FindObjectOfType<Canvas>();
+            var dm = Dialogue.DialogueManager.Instance;
+            if (dm == null) return;
+            Canvas canvas = dm.GetComponent<Canvas>();
             if (canvas == null) return;
 
             hintRoot = new GameObject("MoveHint").AddComponent<RectTransform>();
             hintRoot.SetParent(canvas.transform, false);
-            hintRoot.sizeDelta = new Vector2(120f, 34f);
+            hintRoot.sizeDelta = new Vector2(180f, 51f);
             hintRoot.gameObject.SetActive(false);
 
             var bg = hintRoot.gameObject.AddComponent<UnityEngine.UI.Image>();
@@ -89,10 +95,10 @@ namespace Myd.Platform
             textRect.SetParent(hintRoot, false);
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(4f, 2f);
-            textRect.offsetMax = new Vector2(-4f, -2f);
+            textRect.offsetMin = new Vector2(6f, 3f);
+            textRect.offsetMax = new Vector2(-6f, -3f);
             hintLabel = textGo.AddComponent<UnityEngine.UI.Text>();
-            hintLabel.fontSize = 18;
+            hintLabel.fontSize = 27;
             hintLabel.color = Color.white;
             hintLabel.alignment = TextAnchor.MiddleCenter;
             hintLabel.text = hintText;

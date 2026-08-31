@@ -209,6 +209,9 @@ namespace Myd.Platform
                 var qGo = new GameObject("QuestUI");
                 qGo.AddComponent<Quest.QuestUI>();
             }
+
+            // 场景重开（R 键）：常驻单例，一次创建跨场景复用
+            SceneReloader.Ensure();
         }
 
         /// <summary>

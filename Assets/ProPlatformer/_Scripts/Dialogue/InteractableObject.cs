@@ -63,7 +63,7 @@ namespace Myd.Platform.Dialogue
 
             hintRoot = new GameObject("InteractHint").AddComponent<RectTransform>();
             hintRoot.SetParent(canvas.transform, false);
-            hintRoot.sizeDelta = new Vector2(120f, 34f);
+            hintRoot.sizeDelta = new Vector2(180f, 51f);
             hintRoot.gameObject.SetActive(false);
 
             var bg = hintRoot.gameObject.AddComponent<UnityEngine.UI.Image>();
@@ -75,10 +75,10 @@ namespace Myd.Platform.Dialogue
             textRect.SetParent(hintRoot, false);
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(4f, 2f);
-            textRect.offsetMax = new Vector2(-4f, -2f);
+            textRect.offsetMin = new Vector2(6f, 3f);
+            textRect.offsetMax = new Vector2(-6f, -3f);
             hintLabel = textGo.AddComponent<UnityEngine.UI.Text>();
-            hintLabel.fontSize = 18;
+            hintLabel.fontSize = 27;
             hintLabel.color = Color.white;
             hintLabel.alignment = TextAnchor.MiddleCenter;
             hintLabel.text = hintText;

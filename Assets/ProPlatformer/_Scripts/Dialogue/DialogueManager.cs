@@ -13,10 +13,10 @@ namespace Myd.Platform.Dialogue
         public static DialogueManager Instance { get; private set; }
 
         [Header("UI设置")]
-        [SerializeField] private float bubbleWidth = 240f;   // 气泡宽度（像素）
-        [SerializeField] private float bubbleHeight = 90f;   // 气泡高度（像素）
-        [SerializeField] private int fontSize = 20;
-        [SerializeField] private float portraitSize = 64f;   // 头像尺寸（像素）
+        [SerializeField] private float bubbleWidth = 360f;   // 气泡宽度（像素）
+        [SerializeField] private float bubbleHeight = 135f;   // 气泡高度（像素）
+        [SerializeField] private int fontSize = 30;
+        [SerializeField] private float portraitSize = 96f;   // 头像尺寸（像素）
         [SerializeField] private float charRevealInterval = 0.03f; // 打字机速度
         [SerializeField] private float fadeTime = 0.25f;
 
@@ -79,7 +79,11 @@ namespace Myd.Platform.Dialogue
                 canvas = gameObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvas.sortingOrder = 500;
-                gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+                // 分辨率自适应：按 1920x1080 基准缩放（宽高各半），气泡/提示条跨分辨率大小一致
+                var scaler = gameObject.AddComponent<UnityEngine.UI.CanvasScaler>();
+                scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920f, 1080f);
+                scaler.matchWidthOrHeight = 0.5f;
                 gameObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
             }
 
@@ -285,9 +289,9 @@ namespace Myd.Platform.Dialogue
 
         [Header("气泡位置")]
         [Tooltip("气泡水平偏移（像素，正=右侧，负=左侧）")]
-        [SerializeField] private float bubbleOffsetX = 130f;
+        [SerializeField] private float bubbleOffsetX = 195f;
         [Tooltip("气泡垂直偏移（像素，正=上方）")]
-        [SerializeField] private float bubbleOffsetY = 60f;
+        [SerializeField] private float bubbleOffsetY = 90f;
 
         private void LateUpdate()
         {
